@@ -8,8 +8,8 @@ import { verifyAuth } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-router.get('/:id/locations', verifyAuth, getUserLocations);
-router.post('/:id/locations', verifyAuth, addUserLocation);
+router.get('/user/:id', verifyAuth, getUserLocations);
+router.post('/user/:id', verifyAuth, addUserLocation);
 
 export default router;
 // This code defines the routes for managing user locations in the application.

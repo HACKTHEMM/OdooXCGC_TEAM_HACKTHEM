@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { testConnection } from './config/db.js';
 
 // Load environment variables
 dotenv.config();
@@ -46,7 +47,51 @@ app.use('/api/notifications', notificationRoutes);
 
 // Root route
 app.get('/', (req, res) => {
-    res.send('API is running...');
+    res.json({
+        message: 'OdooXCGC Team Hackthem API is running!',
+        version: '1.0.0',
+        endpoints: {
+            users: '/api/users',
+            issues: '/api/issues',
+            admin: '/api/admin',
+            locations: '/api/locations',
+            notifications: '/api/notifications'
+        }
+    });
+});
+
+// Health check route
+app.get('/health', async (req, res) => {
+    try {
+        const dbStatus = await testConnection();
+        res.json({
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
+            database: dbStatus ? 'connected' : 'disconnected'
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'unhealthy',
+            timestamp: new Date().toISOString(),
+            error: error.message
+        });
+    }
+});
+
+// 404 handler for undefined routes
+app.use('*', (req, res) => {
+    res.status(404).json({
+        error: 'Route not found',
+        method: req.method,
+        path: req.originalUrl,
+        availableRoutes: {
+            users: '/api/users',
+            issues: '/api/issues',
+            admin: '/api/admin',
+            locations: '/api/locations',
+            notifications: '/api/notifications'
+        }
+    });
 });
 
 // Global error handler (Express 5 native)

@@ -1,6 +1,7 @@
 // middleware/auth.js
 import jwt from 'jsonwebtoken';
-import { User } from '../models/index.js'; // Sequelize model import
+import { query } from '../config/db.js';
+import { JWT_SECRET } from '../config/env.js';
 
 export const verifyAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -12,18 +13,19 @@ export const verifyAuth = async (req, res, next) => {
   const token = authHeader.substring(7);
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
 
-    const user = await User.findOne({
-      where: { user_id: decoded.user_id, is_active: true },
-      attributes: { exclude: ['password_hash'] },
-    });
+    const result = await query(`
+      SELECT id, user_name, email, is_verified, is_banned, created_at
+      FROM users 
+      WHERE id = $1 AND is_banned = false
+    `, [decoded.id]);
 
-    if (!user) {
+    if (result.rowCount === 0) {
       return res.status(401).json({ error: 'Invalid token', code: 'INVALID_TOKEN' });
     }
 
-    req.user = user;
+    req.user = result.rows[0];
     next();
   } catch (err) {
     const message = err.name === 'TokenExpiredError' ? 'Token expired' : 'Invalid token';
@@ -40,13 +42,14 @@ export const optionalAuth = async (req, res, next) => {
 
   const token = authHeader.substring(7);
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({
-      where: { user_id: decoded.user_id, is_active: true },
-      attributes: { exclude: ['password_hash'] },
-    });
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const result = await query(`
+      SELECT id, user_name, email, is_verified, is_banned, created_at
+      FROM users 
+      WHERE id = $1 AND is_banned = false
+    `, [decoded.id]);
 
-    req.user = user || null;
+    req.user = result.rowCount > 0 ? result.rows[0] : null;
     next();
   } catch (err) {
     req.user = null;

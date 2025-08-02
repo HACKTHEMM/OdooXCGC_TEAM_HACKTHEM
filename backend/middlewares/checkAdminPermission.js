@@ -1,4 +1,4 @@
-import { AdminUser } from '../models/index.js';
+import { query } from '../config/db.js';
 
 const checkAdminPermission = (requiredLevel = 'moderator') => {
     const levels = ['moderator', 'admin', 'super_admin'];
@@ -7,14 +7,17 @@ const checkAdminPermission = (requiredLevel = 'moderator') => {
         try {
             const userId = req.user.id;
 
-            const admin = await AdminUser.findOne({
-                where: { user_id: userId, is_active: true }
-            });
+            const result = await query(`
+                SELECT id, role as admin_level, is_active
+                FROM admin_users 
+                WHERE user_id = $1 AND is_active = true
+            `, [userId]);
 
-            if (!admin) {
+            if (result.rowCount === 0) {
                 return res.status(403).json({ error: 'Access denied. Not an admin.' });
             }
 
+            const admin = result.rows[0];
             const userLevelIndex = levels.indexOf(admin.admin_level);
             const requiredLevelIndex = levels.indexOf(requiredLevel);
 

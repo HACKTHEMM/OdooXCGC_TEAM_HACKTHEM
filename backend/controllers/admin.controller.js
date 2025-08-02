@@ -43,7 +43,7 @@ export const getAllUsers = async (req, res) => {
 export const banUser = async (req, res) => {
     const { id } = req.params;
     const { is_banned, ban_reason } = req.body;
-    const adminId = req.user.id;
+    const adminId = req.admin.id; // Use admin ID from admin_users table
 
     try {
         const result = await query(`
