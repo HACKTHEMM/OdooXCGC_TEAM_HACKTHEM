@@ -1,3 +1,98 @@
+// Update Issue Status
+export const updateIssueStatus = async (req, res) => {
+    const { id } = req.params;
+    const { new_status_id, change_reason } = req.body;
+    const changed_by = req.user.id;
+    if (!new_status_id) {
+        return res.status(400).json({ error: 'New status ID is required' });
+    }
+    try {
+        // Get current status
+        const current = await query('SELECT status_id FROM issues WHERE id = $1', [id]);
+        if (current.rows.length === 0) {
+            return res.status(404).json({ error: 'Issue not found' });
+        }
+        const old_status_id = current.rows[0].status_id;
+        // Update status
+        await query('UPDATE issues SET status_id = $1 WHERE id = $2', [new_status_id, id]);
+        // Log status change
+        await query(`
+            INSERT INTO issue_status_log (issue_id, old_status_id, new_status_id, change_reason, changed_by)
+            VALUES ($1, $2, $3, $4, $5)
+        `, [id, old_status_id, new_status_id, change_reason || null, changed_by]);
+        res.json({ message: 'Issue status updated' });
+    } catch (err) {
+        console.error('Update issue status error:', err);
+        res.status(500).json({ error: 'Failed to update issue status' });
+    }
+};
+// Get All Issues
+export const getIssues = async (req, res) => {
+    try {
+        const result = await query(`
+            SELECT i.*, c.name AS category_name, u.user_name AS reporter_name
+            FROM issues i
+            JOIN categories c ON i.category_id = c.id
+            JOIN users u ON i.reporter_id = u.id
+            WHERE i.is_hidden = false
+            ORDER BY i.created_at DESC
+            LIMIT 100
+        `);
+        res.json({ issues: result.rows });
+    } catch (err) {
+        console.error('Get issues error:', err);
+        res.status(500).json({ error: 'Failed to fetch issues' });
+    }
+};
+// Get Issue By ID
+export const getIssueById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await query(`
+            SELECT i.*, c.name AS category_name, u.user_name AS reporter_name
+            FROM issues i
+            JOIN categories c ON i.category_id = c.id
+            JOIN users u ON i.reporter_id = u.id
+            WHERE i.id = $1
+        `, [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Issue not found' });
+        }
+        res.json({ issue: result.rows[0] });
+    } catch (err) {
+        console.error('Get issue by ID error:', err);
+        res.status(500).json({ error: 'Failed to fetch issue' });
+    }
+};
+// Flag Issue
+export const flagIssue = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { reason } = req.body;
+
+    if (!reason) {
+        return res.status(400).json({ error: 'Flag reason is required' });
+    }
+
+    try {
+        // Insert a flag for the issue by this user
+        await query(`
+            INSERT INTO issue_flags (issue_id, flagger_id, reason)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (issue_id, flagger_id) DO NOTHING
+        `, [id, userId, reason]);
+
+        // Optionally increment flag count on the issue
+        await query(`
+            UPDATE issues SET flag_count = COALESCE(flag_count, 0) + 1 WHERE id = $1
+        `, [id]);
+
+        res.status(201).json({ message: 'Issue flagged for review' });
+    } catch (err) {
+        console.error('Flag issue error:', err);
+        res.status(500).json({ error: 'Failed to flag issue' });
+    }
+};
 // controllers/issue.controller.js (Raw SQL Version)
 
 import { query } from '../config/db.js';

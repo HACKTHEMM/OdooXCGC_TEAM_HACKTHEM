@@ -1,6 +1,11 @@
 // config/db.js
+
+import dotenv from 'dotenv';
+dotenv.config();
 import pkg from 'pg';
 import { DATABASE_URL } from './env.js';
+
+console.log('Loaded DATABASE_URL:', DATABASE_URL, typeof DATABASE_URL);
 
 const { Pool } = pkg;
 
@@ -94,16 +99,78 @@ export const transaction = async (callback) => {
 export const initializeDatabase = async () => {
   try {
     console.log('🔧 Initializing database...');
-    
+
     // Create extensions
-    await query('CREATE EXTENSION IF NOT EXISTS postgis;');
+    // await query('CREATE EXTENSION IF NOT EXISTS postgis;');
     await query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
-    
+
     console.log('✅ Database extensions created successfully');
-    
-    // You can add table creation queries here if needed
-    // Or use migration files
-    
+
+    // Create users table
+    await query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        user_name VARCHAR(50) NOT NULL,
+        email VARCHAR(100) NOT NULL UNIQUE,
+        phone VARCHAR(20),
+        password_hash VARCHAR(255) NOT NULL,
+        is_verified BOOLEAN DEFAULT FALSE,
+        is_anonymous BOOLEAN DEFAULT FALSE,
+        is_banned BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login TIMESTAMP
+      );
+    `);
+
+    // Create categories table
+    await query(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        description TEXT,
+        icon_url VARCHAR(255),
+        color_code VARCHAR(20),
+        is_active BOOLEAN DEFAULT TRUE
+      );
+    `);
+
+    // Create issue_status table
+    await query(`
+      CREATE TABLE IF NOT EXISTS issue_status (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(50) NOT NULL UNIQUE,
+        description TEXT,
+        color_code VARCHAR(20),
+        sort_order INT,
+        is_active BOOLEAN DEFAULT TRUE
+      );
+    `);
+
+    // Create issues table
+    await query(`
+      CREATE TABLE IF NOT EXISTS issues (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        category_id INT REFERENCES categories(id),
+        reporter_id INT REFERENCES users(id),
+        is_anonymous BOOLEAN DEFAULT FALSE,
+        latitude DOUBLE PRECISION,
+        longitude DOUBLE PRECISION,
+        address VARCHAR(255),
+        location_description TEXT,
+        is_hidden BOOLEAN DEFAULT FALSE,
+        flag_count INT DEFAULT 0,
+        status_id INT REFERENCES issue_status(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Add more CREATE TABLE statements for other tables as needed
+
+    console.log('✅ Database tables created successfully');
     return true;
   } catch (error) {
     console.error('❌ Database initialization failed:', error.message);
@@ -125,6 +192,15 @@ export const seedDefaultData = async () => {
       { name: 'Public Safety', description: 'Open manholes, exposed wiring, safety hazards', color_code: '#AA0000' },
       { name: 'Obstructions', description: 'Fallen trees, debris, blocked paths', color_code: '#8B4513' }
     ];
+
+    // Example: Insert a default user with password '123' (hashed)
+    const bcrypt = (await import('bcryptjs')).default;
+    const passwordHash = await bcrypt.hash('123', 10);
+    await query(`
+      INSERT INTO users (user_name, email, password_hash, is_verified)
+      VALUES ('testuser', 'testuser@example.com', $1, true)
+      ON CONFLICT (email) DO NOTHINGdddd
+    `, [passwordHash]);
 
     for (const category of categories) {
       await query(`

@@ -16,20 +16,20 @@ export const registerUser = async (req, res) => {
     const { user_name, email, password } = req.body;
 
     try {
-        const existing = await User.findOne({ where: { email } });
+        const existing = await User.findByEmail(email);
         if (existing) {
             return res.status(400).json({ error: 'Email already registered' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({
-            user_name,
+            userName: user_name,
             email,
-            password_hash: hashedPassword
+            passwordHash: hashedPassword
         });
 
         const token = generateToken(newUser);
-        res.status(201).json({ token, user: { id: newUser.id, email, user_name } });
+        res.status(201).json({ token, user: { id: newUser.id, email, user_name: newUser.user_name } });
     } catch (err) {
         console.error('Register error:', err);
         res.status(500).json({ error: 'Server error during registration' });
@@ -41,7 +41,7 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({ where: { email } });
+        const user = await User.findByEmail(email);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -52,7 +52,7 @@ export const loginUser = async (req, res) => {
         }
 
         const token = generateToken(user);
-        await user.update({ last_login: new Date() });
+        await User.update(user.id, { last_login: new Date() });
 
         res.json({ token, user: { id: user.id, email, user_name: user.user_name } });
     } catch (err) {

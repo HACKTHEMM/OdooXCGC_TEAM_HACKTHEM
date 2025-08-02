@@ -1,3 +1,168 @@
+// Update Category
+export const updateCategory = async (req, res) => {
+    const { id } = req.params;
+    const { name, description, icon_url, color_code } = req.body;
+    if (!name) {
+        return res.status(400).json({ error: 'Category name is required' });
+    }
+    try {
+        const result = await query(`
+            UPDATE categories SET name = $1, description = $2, icon_url = $3, color_code = $4
+            WHERE id = $5 RETURNING *
+        `, [name, description || null, icon_url || null, color_code || null, id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Category not found' });
+        }
+        res.json({ message: 'Category updated', category: result.rows[0] });
+    } catch (err) {
+        console.error('Update category error:', err);
+        res.status(500).json({ error: 'Failed to update category' });
+    }
+};
+// Hide Flagged Issue
+export const hideFlaggedIssue = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await query(`
+            UPDATE issues SET is_hidden = true WHERE id = $1 RETURNING id, title, is_hidden
+        `, [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Issue not found' });
+        }
+        res.json({ message: 'Issue hidden', issue: result.rows[0] });
+    } catch (err) {
+        console.error('Hide flagged issue error:', err);
+        res.status(500).json({ error: 'Failed to hide issue' });
+    }
+};
+// Get Flagged Issues
+export const getFlaggedIssues = async (req, res) => {
+    try {
+        const result = await query(`
+            SELECT i.*, f.reason, f.flagger_id, u.user_name AS flagger_name
+            FROM issues i
+            JOIN issue_flags f ON i.id = f.issue_id
+            JOIN users u ON f.flagger_id = u.id
+            WHERE i.is_hidden = false
+            ORDER BY i.flag_count DESC, i.created_at DESC
+            LIMIT 100
+        `);
+        res.json({ flaggedIssues: result.rows });
+    } catch (err) {
+        console.error('Get flagged issues error:', err);
+        res.status(500).json({ error: 'Failed to fetch flagged issues' });
+    }
+};
+// Get All Categories
+export const getCategories = async (req, res) => {
+    try {
+        const result = await query(`
+            SELECT * FROM categories ORDER BY name
+        `);
+        res.json({ categories: result.rows });
+    } catch (err) {
+        console.error('Get categories error:', err);
+        res.status(500).json({ error: 'Failed to fetch categories' });
+    }
+};
+// Get Analytics Summary
+export const getAnalyticsSummary = async (req, res) => {
+    try {
+        const result = await query(`
+            SELECT 
+                (SELECT COUNT(*) FROM users) AS total_users,
+                (SELECT COUNT(*) FROM issues) AS total_issues,
+                (SELECT COUNT(*) FROM issues WHERE is_hidden = false) AS active_issues,
+                (SELECT COUNT(*) FROM issues WHERE is_hidden = true) AS hidden_issues,
+                (SELECT COUNT(*) FROM categories) AS total_categories
+        `);
+        res.json({ summary: result.rows[0] });
+    } catch (err) {
+        console.error('Get analytics summary error:', err);
+        res.status(500).json({ error: 'Failed to fetch analytics summary' });
+    }
+};
+// Get All Users
+export const getAllUsers = async (req, res) => {
+    try {
+        const result = await query(`
+            SELECT id, user_name, email, is_verified, is_banned, created_at, last_login
+            FROM users
+            ORDER BY created_at DESC
+            LIMIT 200
+        `);
+        res.json({ users: result.rows });
+    } catch (err) {
+        console.error('Get all users error:', err);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+};
+// Delete Issue
+export const deleteIssue = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await query(`
+            DELETE FROM issues WHERE id = $1 RETURNING *
+        `, [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Issue not found' });
+        }
+        res.json({ message: 'Issue deleted', issue: result.rows[0] });
+    } catch (err) {
+        console.error('Delete issue error:', err);
+        res.status(500).json({ error: 'Failed to delete issue' });
+    }
+};
+// Delete Category
+export const deleteCategory = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await query(`
+            DELETE FROM categories WHERE id = $1 RETURNING *
+        `, [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Category not found' });
+        }
+        res.json({ message: 'Category deleted', category: result.rows[0] });
+    } catch (err) {
+        console.error('Delete category error:', err);
+        res.status(500).json({ error: 'Failed to delete category' });
+    }
+};
+// Create Category
+export const createCategory = async (req, res) => {
+    const { name, description, icon_url, color_code } = req.body;
+    if (!name) {
+        return res.status(400).json({ error: 'Category name is required' });
+    }
+    try {
+        const result = await query(`
+            INSERT INTO categories (name, description, icon_url, color_code)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `, [name, description || null, icon_url || null, color_code || null]);
+        res.status(201).json({ category: result.rows[0] });
+    } catch (err) {
+        console.error('Create category error:', err);
+        res.status(500).json({ error: 'Failed to create category' });
+    }
+};
+// Ban User
+export const banUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await query(`
+            UPDATE users SET is_banned = true WHERE id = $1 RETURNING id, user_name, email, is_banned
+        `, [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ message: 'User banned', user: result.rows[0] });
+    } catch (err) {
+        console.error('Ban user error:', err);
+        res.status(500).json({ error: 'Failed to ban user' });
+    }
+};
 
 // controllers/issue.controller.js (Raw SQL Version)
 
