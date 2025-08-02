@@ -2,6 +2,212 @@
 
 import { query } from '../config/db.js';
 
+// GET /issues - Get all issues with filters
+export const getIssues = async (req, res) => {
+    const { 
+        page = 1, 
+        limit = 20, 
+        category_id, 
+        status_id, 
+        search, 
+        sort_by = 'created_at', 
+        sort_order = 'DESC' 
+    } = req.query;
+    
+    const offset = (page - 1) * limit;
+    
+    try {
+        let whereConditions = ['i.is_hidden = false'];
+        let params = [];
+        let paramCount = 0;
+
+        if (category_id) {
+            paramCount++;
+            whereConditions.push(`i.category_id = $${paramCount}`);
+            params.push(category_id);
+        }
+
+        if (status_id) {
+            paramCount++;
+            whereConditions.push(`i.status_id = $${paramCount}`);
+            params.push(status_id);
+        }
+
+        if (search) {
+            paramCount++;
+            whereConditions.push(`(i.title ILIKE $${paramCount} OR i.description ILIKE $${paramCount})`);
+            params.push(`%${search}%`);
+        }
+
+        const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+        
+        paramCount++;
+        params.push(limit);
+        paramCount++;
+        params.push(offset);
+
+        const result = await query(`
+            SELECT 
+                i.id, i.title, i.description, i.category_id, i.status_id,
+                i.reporter_id, i.is_anonymous, i.flag_count, i.upvote_count, 
+                i.downvote_count, i.latitude, i.longitude, i.address,
+                i.location_description, i.created_at, i.updated_at,
+                c.name as category_name, c.color as category_color,
+                s.name as status_name, s.color as status_color,
+                CASE WHEN i.is_anonymous = true THEN 'Anonymous' ELSE u.user_name END as reporter_name
+            FROM issues i
+            JOIN categories c ON i.category_id = c.id
+            JOIN issue_status s ON i.status_id = s.id
+            LEFT JOIN users u ON i.reporter_id = u.id
+            ${whereClause}
+            ORDER BY i.${sort_by} ${sort_order}
+            LIMIT $${paramCount - 1} OFFSET $${paramCount}
+        `, params);
+
+        // Get total count for pagination
+        const countResult = await query(`
+            SELECT COUNT(*) as total
+            FROM issues i
+            ${whereClause}
+        `, params.slice(0, -2)); // Remove limit and offset for count
+
+        res.json({
+            issues: result.rows,
+            pagination: {
+                page: Number(page),
+                limit: Number(limit),
+                total: Number(countResult.rows[0].total)
+            }
+        });
+    } catch (err) {
+        console.error('Get issues error:', err);
+        res.status(500).json({ error: 'Failed to fetch issues' });
+    }
+};
+
+// GET /issues/:id - Get single issue by ID
+export const getIssueById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await query(`
+            SELECT 
+                i.id, i.title, i.description, i.category_id, i.status_id,
+                i.reporter_id, i.is_anonymous, i.flag_count, i.upvote_count, 
+                i.downvote_count, i.latitude, i.longitude, i.address,
+                i.location_description, i.created_at, i.updated_at,
+                c.name as category_name, c.color as category_color, c.icon as category_icon,
+                s.name as status_name, s.color as status_color,
+                CASE WHEN i.is_anonymous = true THEN 'Anonymous' ELSE u.user_name END as reporter_name,
+                CASE WHEN i.is_anonymous = true THEN NULL ELSE u.email END as reporter_email
+            FROM issues i
+            JOIN categories c ON i.category_id = c.id
+            JOIN issue_status s ON i.status_id = s.id
+            LEFT JOIN users u ON i.reporter_id = u.id
+            WHERE i.id = $1 AND i.is_hidden = false
+        `, [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Issue not found' });
+        }
+
+        res.json({ issue: result.rows[0] });
+    } catch (err) {
+        console.error('Get issue by ID error:', err);
+        res.status(500).json({ error: 'Failed to fetch issue' });
+    }
+};
+
+// PATCH /issues/:id/status - Update issue status
+export const updateIssueStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status_id, change_reason } = req.body;
+    const changedBy = req.user.id;
+
+    if (!status_id) {
+        return res.status(400).json({ error: 'Status ID is required' });
+    }
+
+    try {
+        // Get current status for logging
+        const currentIssue = await query(`
+            SELECT status_id FROM issues WHERE id = $1
+        `, [id]);
+
+        if (currentIssue.rowCount === 0) {
+            return res.status(404).json({ error: 'Issue not found' });
+        }
+
+        const oldStatusId = currentIssue.rows[0].status_id;
+
+        // Update issue status
+        const result = await query(`
+            UPDATE issues
+            SET status_id = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $2
+            RETURNING id, status_id
+        `, [status_id, id]);
+
+        // Log status change
+        await query(`
+            INSERT INTO issue_status_log (issue_id, old_status_id, new_status_id, change_reason, changed_by)
+            VALUES ($1, $2, $3, $4, $5)
+        `, [id, oldStatusId, status_id, change_reason || 'Status updated by admin/agent', changedBy]);
+
+        res.json({
+            message: 'Issue status updated successfully',
+            issue: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Update issue status error:', err);
+        res.status(500).json({ error: 'Failed to update issue status' });
+    }
+};
+
+// POST /issues/:id/flag - Flag an issue
+export const flagIssue = async (req, res) => {
+    const { id } = req.params;
+    const { flag_reason } = req.body;
+    const flaggerId = req.user.id;
+
+    if (!flag_reason) {
+        return res.status(400).json({ error: 'Flag reason is required' });
+    }
+
+    try {
+        // Check if user already flagged this issue
+        const existingFlag = await query(`
+            SELECT id FROM issue_flags WHERE issue_id = $1 AND flagger_id = $2
+        `, [id, flaggerId]);
+
+        if (existingFlag.rowCount > 0) {
+            return res.status(400).json({ error: 'You have already flagged this issue' });
+        }
+
+        // Add flag
+        await query(`
+            INSERT INTO issue_flags (issue_id, flagger_id, flag_reason)
+            VALUES ($1, $2, $3)
+        `, [id, flaggerId, flag_reason]);
+
+        // Update flag count
+        const result = await query(`
+            UPDATE issues
+            SET flag_count = flag_count + 1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+            RETURNING flag_count
+        `, [id]);
+
+        res.status(201).json({
+            message: 'Issue flagged successfully',
+            flag_count: result.rows[0].flag_count
+        });
+    } catch (err) {
+        console.error('Flag issue error:', err);
+        res.status(500).json({ error: 'Failed to flag issue' });
+    }
+};
+
 // Create Issue
 export const createIssue = async (req, res) => {
     const { title, description, category_id, latitude, longitude, address, location_description, is_anonymous } = req.body;

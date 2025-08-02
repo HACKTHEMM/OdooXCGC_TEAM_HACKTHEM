@@ -53,3 +53,64 @@ export const optionalAuth = async (req, res, next) => {
     next();
   }
 };
+
+// Verify admin role
+export const verifyAdmin = async (req, res, next) => {
+  try {
+    // First verify auth
+    await verifyAuth(req, res, () => {});
+    
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Check if user is admin
+    const { query } = await import('../config/db.js');
+    const result = await query(`
+      SELECT au.id, au.role
+      FROM admin_users au
+      WHERE au.user_id = $1 AND au.is_active = true
+    `, [req.user.id]);
+
+    if (result.rowCount === 0) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    req.admin = result.rows[0];
+    next();
+  } catch (err) {
+    console.error('Admin verification error:', err);
+    res.status(500).json({ error: 'Server error during admin verification' });
+  }
+};
+
+// Verify admin or agent role
+export const verifyAdminOrAgent = async (req, res, next) => {
+  try {
+    // First verify auth
+    await verifyAuth(req, res, () => {});
+    
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Check if user is admin or agent
+    const { query } = await import('../config/db.js');
+    const result = await query(`
+      SELECT au.id, au.role
+      FROM admin_users au
+      WHERE au.user_id = $1 AND au.is_active = true
+      AND au.role IN ('admin', 'agent')
+    `, [req.user.id]);
+
+    if (result.rowCount === 0) {
+      return res.status(403).json({ error: 'Admin or agent access required' });
+    }
+
+    req.admin = result.rows[0];
+    next();
+  } catch (err) {
+    console.error('Admin/Agent verification error:', err);
+    res.status(500).json({ error: 'Server error during admin/agent verification' });
+  }
+};
