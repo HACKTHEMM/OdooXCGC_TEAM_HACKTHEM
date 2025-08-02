@@ -64,6 +64,33 @@ export const getIssues = async (req, res) => {
             LIMIT $${paramCount - 1} OFFSET $${paramCount}
         `, params);
 
+        // Get photos for all issues
+        const issueIds = result.rows.map(issue => issue.id);
+        let photosMap = {};
+
+        if (issueIds.length > 0) {
+            const photosResult = await query(`
+                SELECT issue_id, id, photo_url, photo_order, file_size, mime_type
+                FROM issue_photos 
+                WHERE issue_id = ANY($1)
+                ORDER BY issue_id, photo_order ASC
+            `, [issueIds]);
+
+            // Group photos by issue_id
+            photosResult.rows.forEach(photo => {
+                if (!photosMap[photo.issue_id]) {
+                    photosMap[photo.issue_id] = [];
+                }
+                photosMap[photo.issue_id].push(photo);
+            });
+        }
+
+        // Add photos to each issue
+        const issuesWithPhotos = result.rows.map(issue => ({
+            ...issue,
+            photos: photosMap[issue.id] || []
+        }));
+
         // Get total count for pagination
         const countResult = await query(`
             SELECT COUNT(*) as total
@@ -74,7 +101,7 @@ export const getIssues = async (req, res) => {
         res.json({
             success: true,
             data: {
-                data: result.rows,
+                data: issuesWithPhotos,
                 total: Number(countResult.rows[0].total),
                 page: Number(page),
                 limit: Number(limit),
@@ -119,9 +146,21 @@ export const getIssueById = async (req, res) => {
             });
         }
 
+        // Get photos for this issue
+        const photosResult = await query(`
+            SELECT id, photo_url, photo_order, file_size, mime_type
+            FROM issue_photos 
+            WHERE issue_id = $1 
+            ORDER BY photo_order ASC
+        `, [id]);
+
+        // Combine issue data with photos
+        const issueData = result.rows[0];
+        issueData.photos = photosResult.rows;
+
         res.json({
             success: true,
-            data: result.rows[0]
+            data: issueData
         });
     } catch (err) {
         console.error('Get issue by ID error:', err);
@@ -226,6 +265,7 @@ export const flagIssue = async (req, res) => {
 export const createIssue = async (req, res) => {
     const { title, description, category_id, latitude, longitude, address, location_description, is_anonymous } = req.body;
     const reporter_id = req.user.id;
+    const files = req.files; // Get uploaded files
 
     if (!title || !description || !category_id) {
         return res.status(400).json({ error: 'Title, description, and category are required' });
@@ -243,6 +283,7 @@ export const createIssue = async (req, res) => {
     }
 
     try {
+        // First create the issue
         const result = await query(`
             INSERT INTO issues (
                 title, description, category_id, reporter_id, is_anonymous,
@@ -255,9 +296,56 @@ export const createIssue = async (req, res) => {
             parsedLatitude, parsedLongitude, address, location_description
         ]);
 
+        const issueId = result.rows[0].id;
+
+        // Handle photo uploads if any files were provided
+        if (files && files.length > 0) {
+            const photoPromises = files.map((file, index) => {
+                // Convert file system path to complete URL
+                const fullUrl = `http://localhost:${process.env.PORT || 8000}/uploads/issues/${file.filename}`;
+
+                return query(`
+                    INSERT INTO issue_photos (issue_id, photo_url, photo_order, file_size, mime_type)
+                    VALUES ($1, $2, $3, $4, $5)
+                `, [issueId, fullUrl, index + 1, file.size, file.mimetype]);
+            });
+
+            await Promise.all(photoPromises);
+        }
+
+        // Fetch the complete issue data with photos
+        const completeIssueResult = await query(`
+            SELECT 
+                i.id, i.title, i.description, i.category_id, i.status_id,
+                i.reporter_id, i.is_anonymous, i.flag_count, i.upvote_count, 
+                i.downvote_count, i.latitude, i.longitude, i.address,
+                i.location_description, i.created_at, i.updated_at,
+                c.name as category_name, c.color as category_color, c.icon as category_icon,
+                s.name as status_name, s.color as status_color,
+                CASE WHEN i.is_anonymous = true THEN 'Anonymous' ELSE u.user_name END as reporter_name,
+                CASE WHEN i.is_anonymous = true THEN NULL ELSE u.email END as reporter_email
+            FROM issues i
+            JOIN categories c ON i.category_id = c.id
+            JOIN issue_status s ON i.status_id = s.id
+            LEFT JOIN users u ON i.reporter_id = u.id
+            WHERE i.id = $1
+        `, [issueId]);
+
+        // Get photos for the created issue
+        const photosResult = await query(`
+            SELECT id, photo_url, photo_order, file_size, mime_type
+            FROM issue_photos 
+            WHERE issue_id = $1 
+            ORDER BY photo_order ASC
+        `, [issueId]);
+
+        // Combine issue data with photos
+        const issueData = completeIssueResult.rows[0];
+        issueData.photos = photosResult.rows;
+
         res.status(201).json({
             success: true,
-            data: result.rows[0]
+            data: issueData
         });
     } catch (err) {
         console.error('Create issue error:', err);
@@ -278,12 +366,15 @@ export const uploadIssuePhotos = async (req, res) => {
     }
 
     try {
-        const promises = files.map((file, index) =>
-            query(`
+        const promises = files.map((file, index) => {
+            // Convert file system path to complete URL
+            const fullUrl = `http://localhost:${process.env.PORT || 8000}/uploads/issues/${file.filename}`;
+
+            return query(`
                 INSERT INTO issue_photos (issue_id, photo_url, photo_order, file_size, mime_type)
                 VALUES ($1, $2, $3, $4, $5)
-            `, [id, file.path, index + 1, file.size, file.mimetype])
-        );
+            `, [id, fullUrl, index + 1, file.size, file.mimetype]);
+        });
 
         await Promise.all(promises);
         res.status(201).json({ message: 'Photos uploaded successfully' });

@@ -16,7 +16,7 @@ export default {
         'lavender-mist': '#C3A9FF',
         'charcoal-text': '#2B2D42',
         'soft-white': '#FFFFFF',
-        'muted-gray': '#6B7280',
+        'muted-gray': '#4B5563',  // Changed from #6B7280 to a darker gray for better contrast
         'pearl-white': '#F8FAFC',
 
         // Modern Glass Effects
@@ -35,6 +35,12 @@ export default {
         'accent-tertiary': '#C3A9FF',
         'text-primary': '#2B2D42',
         'text-secondary': '#6B7280',
+
+        // Additional aliases for consistency
+        'charcoal': '#2B2D42',
+        'slate-gray': '#6B7280',
+        'bright-blue': '#5AC8FA',
+        'vibrant-pink': '#FF6B6B',
 
         // Legacy dark theme (kept for backwards compatibility)
         'midnight': '#0F0F1C',

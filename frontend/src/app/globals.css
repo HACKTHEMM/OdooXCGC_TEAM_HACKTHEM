@@ -20,7 +20,7 @@
   --lavender-mist: #C3A9FF;
   --charcoal-text: #2B2D42;
   --soft-white: #FFFFFF;
-  --muted-gray: #6B7280;
+  --muted-gray: #4B5563;
   --pearl-white: #F8FAFC;
   --light-sage: #E2E8F0;
   --misty-blue: #CBD5E1;
@@ -108,6 +108,42 @@ body {
   border-color: var(--accent-primary);
   transform: translateY(-2px);
   box-shadow: 0 16px 48px rgba(255, 107, 107, 0.2);
+}
+
+/* Ensure better text contrast on glass surfaces */
+.glass-surface .text-muted-gray {
+  color: #374151 !important;
+  /* Darker gray for better contrast */
+}
+
+.glass-surface .text-gray-500 {
+  color: #374151 !important;
+  /* Darker gray for better contrast */
+}
+
+.glass-surface .text-gray-600 {
+  color: #374151 !important;
+  /* Darker gray for better contrast */
+}
+
+.glass-surface .text-gray-700 {
+  color: #1F2937 !important;
+  /* Even darker for better readability */
+}
+
+.glass-surface h1,
+.glass-surface h2,
+.glass-surface h3,
+.glass-surface h4,
+.glass-surface h5,
+.glass-surface h6 {
+  color: #111827 !important;
+  /* Very dark for headings */
+}
+
+.glass-surface .placeholder-gray-600::placeholder {
+  color: #6B7280 !important;
+  /* Medium gray for placeholders */
 }
 
 .glass-light {
