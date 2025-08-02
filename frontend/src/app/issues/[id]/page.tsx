@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/header';
 
@@ -36,7 +36,6 @@ interface Comment {
 
 export default function IssueDetailPage() {
     const params = useParams();
-    const router = useRouter();
     const [issue, setIssue] = useState<Issue | null>(null);
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
@@ -175,7 +174,7 @@ export default function IssueDetailPage() {
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="text-center">
                         <h1 className="text-2xl font-bold text-gray-900 mb-4">Issue Not Found</h1>
-                        <p className="text-gray-600 mb-6">The issue you're looking for doesn't exist or has been removed.</p>
+                        <p className="text-gray-600 mb-6">The issue you&apos;re looking for doesn&apos;t exist or has been removed.</p>
                         <Link href="/issues" className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
                             Back to Issues
                         </Link>
@@ -270,8 +269,8 @@ export default function IssueDetailPage() {
                             onClick={handleUpvote}
                             disabled={hasUpvoted}
                             className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${hasUpvoted
-                                    ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                                 }`}
                         >
                             <span>👍</span>
@@ -329,8 +328,8 @@ export default function IssueDetailPage() {
                                 type="submit"
                                 disabled={!newComment.trim()}
                                 className={`px-4 py-2 rounded-md transition-colors ${newComment.trim()
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                     }`}
                             >
                                 Post Comment

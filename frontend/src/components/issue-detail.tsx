@@ -110,15 +110,21 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-cloud-white via-blue-50/50 to-purple-50/30 dark:from-midnight dark:via-purple-900/10 dark:to-blue-900/10">
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-bright-blue/20 to-vibrant-pink/20 dark:from-neon-green/20 dark:to-iridescent-purple/20 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-64 h-64 bg-gradient-to-r from-vibrant-pink/20 to-bright-blue/20 dark:from-iridescent-purple/20 dark:to-neon-green/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
+      </div>
+
       {/* Header */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
+      <div className="glass-surface border-b border-glass-light-hover dark:border-glass-dark-hover backdrop-blur-glass sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <button
                 onClick={onBack}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-2 text-slate-gray dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green glass-surface px-4 py-2 rounded-xl border border-glass-light-hover dark:border-glass-dark-hover hover:shadow-neon transition-all duration-300"
               >
                 <ArrowLeft className="h-5 w-5" />
                 Back to Issues
@@ -128,7 +134,7 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
               {onShare && (
                 <button
                   onClick={() => onShare(issue)}
-                  className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+                  className="flex items-center gap-2 px-4 py-2 text-slate-gray dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green glass-surface rounded-xl border border-glass-light-hover dark:border-glass-dark-hover hover:shadow-neon transition-all duration-300"
                 >
                   <Share2 className="h-4 w-4" />
                   Share
@@ -137,7 +143,7 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
               {onFlag && issue.flagCount < 3 && (
                 <button
                   onClick={() => onFlag(issue.id)}
-                  className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                  className="flex items-center gap-2 px-4 py-2 text-slate-gray dark:text-soft-gray hover:text-red-500 dark:hover:text-red-400 glass-surface rounded-xl border border-glass-light-hover dark:border-glass-dark-hover hover:shadow-neon transition-all duration-300"
                 >
                   <Flag className="h-4 w-4" />
                   Flag ({issue.flagCount})
@@ -149,28 +155,28 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
             {/* Issue Header */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-start justify-between mb-4">
+            <div className="glass-surface rounded-2xl p-8 border border-glass-light-hover dark:border-glass-dark-hover backdrop-blur-glass">
+              <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">{issue.title}</h1>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${getCategoryColor(issue.category)}`}>
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-charcoal to-slate-gray dark:from-white dark:to-soft-gray bg-clip-text text-transparent mb-4">{issue.title}</h1>
+                  <div className="flex flex-wrap gap-3 mb-6">
+                    <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border ${getCategoryColor(issue.category)} backdrop-blur-sm`}>
                       {getCategoryIcon(issue.category)} {getCategoryLabel(issue.category)}
                     </span>
-                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(issue.status)}`}>
+                    <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border ${getStatusColor(issue.status)} backdrop-blur-sm`}>
                       {getStatusIcon(issue.status)}
                       {issue.status.replace('-', ' ').toUpperCase()}
                     </span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(issue.priority)}`}>
+                    <span className={`px-4 py-2 rounded-xl text-sm font-medium border ${getPriorityColor(issue.priority)} backdrop-blur-sm`}>
                       {issue.priority.toUpperCase()} PRIORITY
                     </span>
                     {issue.isAnonymous && (
-                      <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                      <span className="px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-iridescent-purple/20 to-vibrant-pink/20 dark:from-iridescent-purple/30 dark:to-neon-green/30 text-iridescent-purple dark:text-neon-green border border-iridescent-purple/30 dark:border-neon-green/30 backdrop-blur-sm">
                         ANONYMOUS
                       </span>
                     )}
@@ -222,7 +228,7 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
                 Status History
               </h2>
               <div className="space-y-4">
-                {issue.statusHistory.map((change, index) => (
+                {issue.statusHistory.map((change) => (
                   <div key={change.id} className="flex gap-4">
                     <div className="flex-shrink-0">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getStatusColor(change.status)}`}>
@@ -279,7 +285,7 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
                     {issue.location.distance.toFixed(1)} km from you
                   </div>
                 )}
-                <button 
+                <button
                   onClick={onViewMap}
                   className="w-full mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
                 >
@@ -323,11 +329,10 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Priority:</span>
-                  <span className={`font-medium ${
-                    issue.priority === 'high' ? 'text-red-600' :
+                  <span className={`font-medium ${issue.priority === 'high' ? 'text-red-600' :
                     issue.priority === 'medium' ? 'text-yellow-600' :
-                    'text-green-600'
-                  }`}>
+                      'text-green-600'
+                    }`}>
                     {issue.priority.toUpperCase()}
                   </span>
                 </div>

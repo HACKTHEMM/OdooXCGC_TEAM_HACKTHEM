@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CivicTracker - Report and Track Municipal Issues",
-  description: "CivicTracker empowers citizens to report municipal issues, track their resolution, and collaborate with local authorities to build better communities.",
+  title: "CivicTracker - Modern Civic Engagement Platform",
+  description: "CivicTracker is a cutting-edge platform that empowers citizens to report municipal issues, track their resolution, and collaborate with local authorities using modern AI-driven tools.",
 };
 
 export default function RootLayout({
@@ -23,9 +23,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              function getThemePreference() {
+                if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+                  return localStorage.getItem('theme');
+                }
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+              }
+              const isDark = getThemePreference() === 'dark';
+              document.documentElement.classList[isDark ? 'add' : 'remove']('dark');
+            })();
+          `
+        }} />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased transition-colors duration-300`}
       >
         {children}
       </body>
