@@ -1,0 +1,8 @@
+<!-- Placeholder for pothole -->
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f5f5f5"/>
+  <rect x="0" y="0" width="400" height="300" fill="#616161"/>
+  <ellipse cx="200" cy="150" rx="80" ry="40" fill="#212121"/>
+  <text x="200" y="250" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">Road Pothole</text>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial" font-size="12" fill="#ccc">Placeholder Image</text>
+</svg>

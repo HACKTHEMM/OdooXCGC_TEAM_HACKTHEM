@@ -1,0 +1,8 @@
+<!-- Placeholder for street light -->
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fff3e0"/>
+  <rect x="180" y="50" width="40" height="200" fill="#424242"/>
+  <circle cx="200" cy="70" r="25" fill="#ff9800"/>
+  <text x="200" y="250" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">Street Light Issue</text>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial" font-size="12" fill="#666">Placeholder Image</text>
+</svg>
