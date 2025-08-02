@@ -36,19 +36,13 @@ export default function LoginPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-neon-gradient rounded-xl flex items-center justify-center shadow-neon group-hover:shadow-purple transition-all duration-300">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple bg-clip-text text-transparent">
-              CivicTracker
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-green-400 dark:to-purple-400 bg-clip-text text-transparent">
+              CivicTrack
             </span>
           </Link>
           <Link
             href="/"
-            className="glass-surface border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green px-4 py-2 rounded-xl hover:shadow-neon transition-all duration-300 font-medium"
+            className="glass-surface border border-blue-500 dark:border-green-400 text-blue-600 dark:text-green-400 px-4 py-2 rounded-xl hover:shadow-lg transition-all duration-300 font-medium"
           >
             Home
           </Link>
@@ -57,10 +51,10 @@ export default function LoginPage() {
         {/* Login Form */}
         <div className="glass-surface rounded-2xl p-8 border border-glass-light-hover dark:border-glass-dark-hover backdrop-blur-glass">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-charcoal to-slate-gray dark:from-white dark:to-soft-gray bg-clip-text text-transparent mb-2">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-2">
               Welcome Back
             </h2>
-            <p className="text-slate-gray dark:text-soft-gray">
+            <p className="text-gray-600 dark:text-gray-400">
               Sign in to continue making a difference
             </p>
           </div>
@@ -68,7 +62,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-charcoal dark:text-white text-sm font-medium mb-2">
+              <label htmlFor="email" className="block text-gray-800 dark:text-white text-sm font-medium mb-2">
                 Email Address
               </label>
               <input
@@ -77,7 +71,7 @@ export default function LoginPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                className="w-full glass-surface border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-green-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-green-400/20 transition-all duration-300"
                 placeholder="Enter your email"
                 required
               />
@@ -85,7 +79,7 @@ export default function LoginPage() {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-charcoal dark:text-white text-sm font-medium mb-2">
+              <label htmlFor="password" className="block text-gray-800 dark:text-white text-sm font-medium mb-2">
                 Password
               </label>
               <input
@@ -94,7 +88,7 @@ export default function LoginPage() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                className="w-full glass-surface border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-green-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-green-400/20 transition-all duration-300"
                 placeholder="Enter your password"
                 required
               />
@@ -109,15 +103,15 @@ export default function LoginPage() {
                   name="rememberMe"
                   checked={formData.rememberMe}
                   onChange={handleChange}
-                  className="w-4 h-4 text-bright-blue dark:text-neon-green bg-glass-light dark:bg-glass-dark border-glass-light-hover dark:border-glass-dark-hover rounded focus:ring-bright-blue dark:focus:ring-neon-green focus:ring-2 transition-all duration-300"
+                  className="w-4 h-4 text-blue-600 dark:text-green-400 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-green-400 focus:ring-2 transition-all duration-300"
                 />
-                <label htmlFor="rememberMe" className="ml-2 text-sm text-slate-gray dark:text-soft-gray">
+                <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                   Remember me
                 </label>
               </div>
               <Link
                 href="/forgot-password"
-                className="text-sm text-bright-blue dark:text-neon-green hover:text-vibrant-pink dark:hover:text-iridescent-purple transition-colors"
+                className="text-sm text-blue-600 dark:text-green-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
               >
                 Forgot password?
               </Link>
@@ -127,7 +121,7 @@ export default function LoginPage() {
             <div className="space-y-4">
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white py-3 rounded-xl font-semibold hover:shadow-neon dark:hover:shadow-purple transition-all duration-300 hover:scale-105"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 dark:from-green-500 dark:to-purple-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105"
               >
                 Sign In
               </button>
@@ -138,7 +132,7 @@ export default function LoginPage() {
                   <div className="w-full border-t border-glass-light-hover dark:border-glass-dark-hover"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 glass-surface text-slate-gray dark:text-soft-gray">Or continue with</span>
+                  <span className="px-2 glass-surface text-gray-600 dark:text-gray-400">Or continue with</span>
                 </div>
               </div>
 
@@ -146,7 +140,7 @@ export default function LoginPage() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  className="glass-surface border border-glass-light-hover dark:border-glass-dark-hover text-charcoal dark:text-white py-2 px-4 rounded-xl hover:shadow-neon transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                  className="glass-surface border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white py-2 px-4 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -158,7 +152,7 @@ export default function LoginPage() {
                 </button>
                 <button
                   type="button"
-                  className="glass-surface border border-glass-light-hover dark:border-glass-dark-hover text-charcoal dark:text-white py-2 px-4 rounded-xl hover:shadow-neon transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                  className="glass-surface border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white py-2 px-4 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -169,11 +163,11 @@ export default function LoginPage() {
             </div>
 
             {/* Sign Up Link */}
-            <div className="text-center pt-4 border-t border-glass-light-hover dark:border-glass-dark-hover">
-              <p className="text-slate-gray dark:text-soft-gray mb-2">Don&apos;t have an account?</p>
+            <div className="text-center pt-4 border-t border-gray-300 dark:border-gray-600">
+              <p className="text-gray-600 dark:text-gray-400 mb-2">Don&apos;t have an account?</p>
               <Link
                 href="/signup"
-                className="glass-surface border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green px-6 py-2 rounded-xl hover:shadow-neon transition-all duration-300 font-medium inline-block"
+                className="glass-surface border border-blue-500 dark:border-green-400 text-blue-600 dark:text-green-400 px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-300 font-medium inline-block"
               >
                 Create Account
               </Link>

@@ -14,14 +14,8 @@ export default function Header() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-neon-gradient rounded-xl flex items-center justify-center shadow-neon group-hover:shadow-purple transition-all duration-300">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple bg-clip-text text-transparent">
-                CivicTracker
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-green-400 dark:to-purple-400 bg-clip-text text-transparent">
+                CivicTrack
               </span>
             </Link>
           </div>
@@ -31,19 +25,19 @@ export default function Header() {
             <nav className="flex items-center space-x-1">
               <Link
                 href="/home"
-                className="text-charcoal dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-glass-light dark:hover:bg-glass-dark"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 Home
               </Link>
               <Link
                 href="/issues"
-                className="text-charcoal dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-glass-light dark:hover:bg-glass-dark"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 Issues
               </Link>
               <Link
                 href="/report"
-                className="text-charcoal dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-glass-light dark:hover:bg-glass-dark"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 Report
               </Link>
@@ -54,14 +48,14 @@ export default function Header() {
 
               <Link
                 href="/login"
-                className="text-charcoal dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
               >
                 Login
               </Link>
 
               <Link
                 href="/signup"
-                className="bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white hover:shadow-neon px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-green-500 dark:to-purple-500 text-white hover:shadow-lg px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95"
               >
                 Sign Up
               </Link>
@@ -73,7 +67,7 @@ export default function Header() {
             <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-charcoal dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green p-2 rounded-lg transition-colors"
+              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 p-2 rounded-lg transition-colors"
               aria-label="Toggle menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,40 +83,40 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-glass-light-hover dark:border-glass-dark-hover">
+          <div className="md:hidden py-4 border-t border-gray-300 dark:border-gray-600">
             <div className="flex flex-col space-y-2">
               <Link
                 href="/home"
-                className="text-charcoal dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-glass-light dark:hover:bg-glass-dark"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
               <Link
                 href="/issues"
-                className="text-charcoal dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-glass-light dark:hover:bg-glass-dark"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Issues
               </Link>
               <Link
                 href="/report"
-                className="text-charcoal dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-glass-light dark:hover:bg-glass-dark"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Report
               </Link>
-              <div className="border-t border-glass-light-hover dark:border-glass-dark-hover pt-4 mt-4">
+              <div className="border-t border-gray-300 dark:border-gray-600 pt-4 mt-4">
                 <Link
                   href="/login"
-                  className="block text-charcoal dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200"
+                  className="block text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Login
                 </Link>
                 <Link
                   href="/signup"
-                  className="block bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white hover:shadow-neon px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 mt-2"
+                  className="block bg-gradient-to-r from-blue-600 to-purple-600 dark:from-green-500 dark:to-purple-500 text-white hover:shadow-lg px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 mt-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sign Up
