@@ -5,7 +5,7 @@ import {
   getAdminActions,
   getAllFlags,
 } from '../controllers/admin.analytics.controller.js';
-import { verifyAdmin } from '../middleware/auth.js';
+import { verifyAdmin } from '../middlewares/auth.js';
 
 const router = express.Router();
 

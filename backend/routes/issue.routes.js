@@ -17,8 +17,8 @@ import {
   getStatusLog,
 } from '../controllers/issue.controller.js';
 
-import { verifyAuth, verifyAdminOrAgent } from '../middleware/auth.js';
-import upload from '../middleware/upload.js';
+import { verifyAuth, verifyAdminOrAgent } from '../middlewares/auth.js';
+import upload from '../middlewares/upload.js';
 
 const router = express.Router();
 
