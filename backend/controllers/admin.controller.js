@@ -7,10 +7,10 @@ import { query } from '../config/db.js';
 export const getAllUsers = async (req, res) => {
     const { page = 1, limit = 20, search = '' } = req.query;
     const offset = (page - 1) * limit;
-    
+
     try {
         const searchFilter = search ? `WHERE user_name ILIKE '%${search}%' OR email ILIKE '%${search}%'` : '';
-        
+
         const result = await query(`
             SELECT id, user_name, email, is_banned, created_at, updated_at
             FROM users
@@ -166,8 +166,8 @@ export const deleteCategory = async (req, res) => {
         `, [id]);
 
         if (Number(issueCheck.rows[0].count) > 0) {
-            return res.status(400).json({ 
-                error: 'Cannot delete category with associated issues' 
+            return res.status(400).json({
+                error: 'Cannot delete category with associated issues'
             });
         }
 
@@ -271,7 +271,7 @@ export const deleteIssue = async (req, res) => {
         await query(`DELETE FROM issue_flags WHERE issue_id = $1`, [id]);
         await query(`DELETE FROM issue_votes WHERE issue_id = $1`, [id]);
         await query(`DELETE FROM issue_status_log WHERE issue_id = $1`, [id]);
-        
+
         // Delete the issue
         await query(`DELETE FROM issues WHERE id = $1`, [id]);
 

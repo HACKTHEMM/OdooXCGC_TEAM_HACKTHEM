@@ -58,8 +58,8 @@ export const optionalAuth = async (req, res, next) => {
 export const verifyAdmin = async (req, res, next) => {
   try {
     // First verify auth
-    await verifyAuth(req, res, () => {});
-    
+    await verifyAuth(req, res, () => { });
+
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
     }
@@ -88,8 +88,8 @@ export const verifyAdmin = async (req, res, next) => {
 export const verifyAdminOrAgent = async (req, res, next) => {
   try {
     // First verify auth
-    await verifyAuth(req, res, () => {});
-    
+    await verifyAuth(req, res, () => { });
+
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
     }

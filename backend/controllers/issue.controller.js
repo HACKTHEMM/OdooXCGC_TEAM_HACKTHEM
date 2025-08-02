@@ -4,18 +4,18 @@ import { query } from '../config/db.js';
 
 // GET /issues - Get all issues with filters
 export const getIssues = async (req, res) => {
-    const { 
-        page = 1, 
-        limit = 20, 
-        category_id, 
-        status_id, 
-        search, 
-        sort_by = 'created_at', 
-        sort_order = 'DESC' 
+    const {
+        page = 1,
+        limit = 20,
+        category_id,
+        status_id,
+        search,
+        sort_by = 'created_at',
+        sort_order = 'DESC'
     } = req.query;
-    
+
     const offset = (page - 1) * limit;
-    
+
     try {
         let whereConditions = ['i.is_hidden = false'];
         let params = [];
@@ -40,7 +40,7 @@ export const getIssues = async (req, res) => {
         }
 
         const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
-        
+
         paramCount++;
         params.push(limit);
         paramCount++;
