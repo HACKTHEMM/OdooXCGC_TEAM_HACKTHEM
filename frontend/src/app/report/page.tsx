@@ -12,12 +12,12 @@ export default function ReportPage() {
     const handleSubmitIssue = async (issueData: CreateIssueForm) => {
         try {
             const response = await apiClient.createIssue(issueData);
-            
+
             if (isApiSuccess(response)) {
                 // Show success message
                 alert('Issue submitted successfully!');
                 setIsFormVisible(false);
-                
+
                 // Optionally redirect to the new issue page
                 // window.location.href = `/issues/${response.data.id}`;
             } else {
@@ -39,53 +39,28 @@ export default function ReportPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-cloud-white via-blue-50/50 to-purple-50/30 dark:from-midnight dark:via-purple-900/10 dark:to-blue-900/10">
+        <div className="min-h-screen bg-gradient-to-br from-twilight-bg via-pearl-white/50 to-lavender-mist/30">
             <Header />
 
             {/* Animated background elements */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-bright-blue/20 to-vibrant-pink/20 dark:from-neon-green/20 dark:to-iridescent-purple/20 rounded-full blur-3xl animate-float"></div>
-                <div className="absolute bottom-20 right-10 w-64 h-64 bg-gradient-to-r from-vibrant-pink/20 to-bright-blue/20 dark:from-iridescent-purple/20 dark:to-neon-green/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
+                <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-electric-coral/20 to-sky-blue/20 rounded-full blur-3xl animate-float"></div>
+                <div className="absolute bottom-20 right-10 w-64 h-64 bg-gradient-to-r from-sky-blue/20 to-lavender-mist/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
             </div>
 
             {/* Hero Section */}
-            <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+            {/* Hero Section */}
+            <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 mobile-padding tablet-padding">
                 <div className="text-center">
                     <div className="animate-slide-up">
-                        <h1 className="text-5xl md:text-7xl font-bold mb-8">
-                            <span className="gradient-text-charcoal">
-                                Report a
-                            </span>
+                        <h1 className="text-5xl md:text-7xl font-bold mb-8 mobile-hero tablet-hero">
+                            <span className="gradient-text-charcoal">Report</span>
                             <br />
-                            <span className="gradient-text-accent animate-glow">
-                                Community Issue
-                            </span>
+                            <span className="gradient-text-electric animate-glow">Civic Issues</span>
                         </h1>
-                        <p className="text-xl md:text-2xl text-text-secondary mb-12 max-w-4xl mx-auto leading-relaxed">
-                            Help make your city smarter by reporting issues that matter. Our AI-powered platform ensures your voice is heard and problems get solved faster.
+                        <p className="text-xl md:text-2xl text-text-secondary mb-12 max-w-3xl mx-auto leading-relaxed mobile-hero-sub">
+                            Help improve your community by reporting issues that need attention. Every report makes a difference.
                         </p>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                        <button
-                            onClick={() => setIsFormVisible(true)}
-                            className="group btn-modern px-12 py-6 rounded-2xl text-xl font-semibold hover:scale-105 hover:-translate-y-1"
-                        >
-                            <span className="flex items-center gap-3">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Start Reporting
-                            </span>
-                        </button>
-                        <button className="group glass-surface border border-accent-primary text-accent-primary px-12 py-6 rounded-2xl text-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 hover:-translate-y-1">
-                            <span className="flex items-center gap-3">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Learn How
-                            </span>
-                        </button>
                     </div>
                 </div>
             </section>

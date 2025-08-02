@@ -1,21 +1,20 @@
 "use client"
 
-import Link from 'next/link';
 import { useState } from 'react';
-import ThemeToggle from './theme-toggle';
+import Link from 'next/link';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="glass-surface border-b border-glass-border backdrop-blur-[20px] sticky top-0 z-50">
+    <header className="glass-surface border-b border-glass-border backdrop-blur-[20px] sticky top-0 z-50 shadow-soft">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-3 group">
-              <span className="text-xl font-bold gradient-text-accent animate-glow">
-                CivicTrack
+              <span className="text-xl font-bold gradient-text-electric animate-glow">
+                CivicTracker
               </span>
             </Link>
           </div>
@@ -25,59 +24,54 @@ export default function Header() {
             <nav className="flex items-center space-x-1">
               <Link
                 href="/home"
-                className="text-text-primary hover:text-accent-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg hover:scale-105"
+                className="text-charcoal-text hover:text-electric-coral px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-light hover:scale-105"
               >
                 Home
               </Link>
               <Link
                 href="/issues"
-                className="text-text-primary hover:text-accent-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg hover:scale-105"
+                className="text-charcoal-text hover:text-electric-coral px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-light hover:scale-105"
               >
                 Issues
               </Link>
               <Link
                 href="/report"
-                className="text-text-primary hover:text-accent-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg hover:scale-105"
+                className="text-charcoal-text hover:text-electric-coral px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-light hover:scale-105"
               >
                 Report
+              </Link>
+              <Link
+                href="/map"
+                className="text-charcoal-text hover:text-electric-coral px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-light hover:scale-105"
+              >
+                Map
               </Link>
             </nav>
 
             <div className="flex items-center space-x-4">
-              <ThemeToggle />
-
               <Link
                 href="/admin"
-                className="text-text-primary hover:text-accent-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
+                className="btn-secondary px-4 py-2 text-sm"
               >
                 Admin
               </Link>
 
               <Link
                 href="/login"
-                className="text-text-primary hover:text-accent-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
+                className="btn-modern px-6 py-2 text-sm"
               >
                 Login
-              </Link>
-
-              <Link
-                href="/signup"
-                className="btn-modern px-6 py-2 rounded-lg text-sm font-medium hover:scale-105 active:scale-95"
-              >
-                Sign Up
               </Link>
             </div>
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-4">
-            <ThemeToggle />
+          <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-text-primary hover:text-accent-primary p-2 rounded-lg transition-all duration-300 hover:bg-glass-bg"
-              aria-label="Toggle menu"
+              className="text-charcoal-text hover:text-electric-coral focus:outline-none focus:text-electric-coral transition-colors duration-300 touch-target"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMenuOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -88,54 +82,52 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-glass-border">
-            <div className="flex flex-col space-y-2">
+          <div className="md:hidden mobile-padding">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 glass-surface rounded-lg mt-2 border border-glass-border shadow-glass">
               <Link
                 href="/home"
-                className="text-text-primary hover:text-accent-primary px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
+                className="text-charcoal-text hover:text-electric-coral block px-3 py-3 rounded-md text-base font-medium transition-colors duration-300 touch-target"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
               <Link
                 href="/issues"
-                className="text-text-primary hover:text-accent-primary px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
+                className="text-charcoal-text hover:text-electric-coral block px-3 py-3 rounded-md text-base font-medium transition-colors duration-300 touch-target"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Issues
               </Link>
               <Link
                 href="/report"
-                className="text-text-primary hover:text-accent-primary px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
+                className="text-charcoal-text hover:text-electric-coral block px-3 py-3 rounded-md text-base font-medium transition-colors duration-300 touch-target"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Report
               </Link>
               <Link
+                href="/map"
+                className="text-charcoal-text hover:text-electric-coral block px-3 py-3 rounded-md text-base font-medium transition-colors duration-300 touch-target"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Map
+              </Link>
+              <Link
                 href="/admin"
-                className="text-text-primary hover:text-accent-primary px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
+                className="text-electric-coral hover:text-sky-blue block px-3 py-3 rounded-md text-base font-medium transition-colors duration-300 touch-target"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Admin
               </Link>
-              <div className="pt-4 border-t border-glass-border">
-                <Link
-                  href="/login"
-                  className="block text-text-primary hover:text-accent-primary px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="block btn-modern mt-2 text-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign Up
-                </Link>
-              </div>
+              <Link
+                href="/login"
+                className="text-charcoal-text hover:text-electric-coral block px-3 py-3 rounded-md text-base font-medium transition-colors duration-300 touch-target"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Login
+              </Link>
             </div>
           </div>
         )}

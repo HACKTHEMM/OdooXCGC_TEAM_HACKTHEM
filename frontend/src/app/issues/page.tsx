@@ -53,7 +53,7 @@ export default function IssuesPage() {
                 }
 
                 const response = await apiClient.getIssues(filters, currentPage, 10);
-                
+
                 if (isApiSuccess(response)) {
                     setIssues(response.data.data);
                     setFilteredIssues(response.data.data);
@@ -75,30 +75,30 @@ export default function IssuesPage() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'open':
-                return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+                return 'bg-electric-coral/10 text-electric-coral border-electric-coral/20';
             case 'in-progress':
-                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+                return 'bg-sky-blue/10 text-sky-blue border-sky-blue/20';
             case 'resolved':
-                return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+                return 'bg-green-500/10 text-green-600 border-green-500/20';
             case 'closed':
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+                return 'bg-muted-gray/10 text-muted-gray border-muted-gray/20';
             default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+                return 'bg-muted-gray/10 text-muted-gray border-muted-gray/20';
         }
     };
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
             case 'urgent':
-                return 'bg-red-500 text-white';
+                return 'bg-electric-coral text-white';
             case 'high':
                 return 'bg-orange-500 text-white';
             case 'medium':
-                return 'bg-yellow-500 text-white';
+                return 'bg-sky-blue text-white';
             case 'low':
                 return 'bg-green-500 text-white';
             default:
-                return 'bg-gray-500 text-white';
+                return 'bg-muted-gray text-white';
         }
     };
 
@@ -117,23 +117,23 @@ export default function IssuesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-cloud-white via-blue-50/50 to-purple-50/30 dark:from-midnight dark:via-purple-900/10 dark:to-blue-900/10">
+        <div className="min-h-screen bg-gradient-to-br from-twilight-bg via-pearl-white/50 to-lavender-mist/30">
             <Header />
 
             {/* Animated background elements */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-bright-blue/20 to-vibrant-pink/20 dark:from-neon-green/20 dark:to-iridescent-purple/20 rounded-full blur-3xl animate-float"></div>
-                <div className="absolute bottom-20 right-10 w-64 h-64 bg-gradient-to-r from-vibrant-pink/20 to-bright-blue/20 dark:from-iridescent-purple/20 dark:to-neon-green/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
+                <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-electric-coral/20 to-sky-blue/20 rounded-full blur-3xl animate-float"></div>
+                <div className="absolute bottom-20 right-10 w-64 h-64 bg-gradient-to-r from-sky-blue/20 to-lavender-mist/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
             </div>
 
             {/* Main Content */}
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 mobile-padding tablet-padding">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-4xl md:text-5xl font-bold gradient-text-charcoal mb-4">
+                    <h1 className="text-4xl md:text-5xl font-bold gradient-text-charcoal mb-4 mobile-hero">
                         Community Issues
                     </h1>
-                    <p className="text-xl text-text-secondary">
+                    <p className="text-xl text-text-secondary mobile-hero-sub">
                         Track and monitor issues reported by your community
                     </p>
                 </div>
@@ -194,8 +194,8 @@ export default function IssuesPage() {
                 ) : error ? (
                     <div className="text-center py-12">
                         <p className="text-red-500 dark:text-red-400 mb-4">{error}</p>
-                        <button 
-                            onClick={() => window.location.reload()} 
+                        <button
+                            onClick={() => window.location.reload()}
                             className="glass-surface border border-accent-primary text-accent-primary px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300"
                         >
                             Retry
@@ -239,7 +239,7 @@ export default function IssuesPage() {
                                         </button>
                                     </div>
                                 </div>
-                                
+
                                 {issue.photos && issue.photos.length > 0 && (
                                     <div className="flex gap-2 mb-4">
                                         {issue.photos.slice(0, 3).map((photo, index) => (
@@ -285,11 +285,10 @@ export default function IssuesPage() {
                                 <button
                                     key={page}
                                     onClick={() => handlePageChange(page)}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                                        currentPage === page
+                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${currentPage === page
                                             ? 'bg-accent-primary text-white'
                                             : 'glass-surface border border-glass-border text-text-primary hover:border-accent-primary'
-                                    }`}
+                                        }`}
                                 >
                                     {page}
                                 </button>

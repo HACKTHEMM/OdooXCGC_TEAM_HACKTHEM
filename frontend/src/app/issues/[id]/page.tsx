@@ -35,7 +35,7 @@ export default function IssueDetailPage() {
                 }
 
                 const response = await apiClient.getIssueById(issueId);
-                
+
                 if (isApiSuccess(response)) {
                     setIssue(response.data);
                 } else {
@@ -54,7 +54,7 @@ export default function IssueDetailPage() {
 
     const handleUpvote = async () => {
         if (!issue) return;
-        
+
         try {
             const response = await apiClient.upvoteIssue(issue.id);
             if (isApiSuccess(response)) {
@@ -77,7 +77,7 @@ export default function IssueDetailPage() {
         try {
             setSubmittingComment(true);
             const response = await apiClient.addComment(issue.id, newComment);
-            
+
             if (isApiSuccess(response)) {
                 setNewComment('');
                 // Refresh the issue data to get updated comments
@@ -98,15 +98,15 @@ export default function IssueDetailPage() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'open':
-                return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+                return 'bg-electric-coral/10 text-electric-coral border-electric-coral/20';
             case 'in-progress':
-                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+                return 'bg-sky-blue/10 text-sky-blue border-sky-blue/20';
             case 'resolved':
-                return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+                return 'bg-green-500/10 text-green-600 border-green-500/20';
             case 'closed':
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+                return 'bg-muted-gray/10 text-muted-gray border-muted-gray/20';
             default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+                return 'bg-muted-gray/10 text-muted-gray border-muted-gray/20';
         }
     };
 
@@ -122,12 +122,12 @@ export default function IssueDetailPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-cloud-white via-blue-50/50 to-purple-50/30 dark:from-midnight dark:via-purple-900/10 dark:to-blue-900/10">
+            <div className="min-h-screen bg-gradient-to-br from-twilight-bg via-pearl-white/50 to-lavender-mist/30">
                 <Header />
-                <div className="flex items-center justify-center min-h-screen">
+                <div className="flex items-center justify-center min-h-screen mobile-padding">
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-bright-blue mx-auto mb-4"></div>
-                        <p className="text-slate-gray dark:text-soft-gray">Loading issue details...</p>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-electric-coral mx-auto mb-4"></div>
+                        <p className="text-muted-gray">Loading issue details...</p>
                     </div>
                 </div>
             </div>
@@ -200,11 +200,11 @@ export default function IssueDetailPage() {
                                     {issue.status?.name || 'Open'}
                                 </span>
                             </div>
-                            
+
                             <p className="text-lg text-slate-gray dark:text-soft-gray mb-6">
                                 {issue.description}
                             </p>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                                 <div className="flex items-center gap-2">
                                     <span className="font-medium text-charcoal dark:text-white">Category:</span>
@@ -232,23 +232,22 @@ export default function IssueDetailPage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="flex flex-col gap-4">
                             <button
                                 onClick={handleUpvote}
                                 disabled={hasUpvoted}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                                    hasUpvoted
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${hasUpvoted
                                         ? 'bg-green-500 text-white cursor-not-allowed'
                                         : 'bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white hover:shadow-neon'
-                                }`}
+                                    }`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                                 </svg>
                                 {hasUpvoted ? 'Upvoted' : 'Upvote'}
                             </button>
-                            
+
                             <Link
                                 href="/report"
                                 className="px-6 py-3 rounded-xl border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green hover:shadow-neon transition-all duration-300 text-center font-semibold"
@@ -309,7 +308,7 @@ export default function IssueDetailPage() {
                 {/* Comments Section */}
                 <div className="glass-surface rounded-2xl p-6 border border-glass-light-hover dark:border-glass-dark-hover">
                     <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-4">Comments</h3>
-                    
+
                     {/* Add Comment Form */}
                     <form onSubmit={handleCommentSubmit} className="mb-6">
                         <div className="flex gap-4">

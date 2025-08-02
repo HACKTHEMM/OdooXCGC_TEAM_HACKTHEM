@@ -37,23 +37,35 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
 
   const filteredIssues = issues.filter(issue => {
     const matchesSearch = issue.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         issue.description.toLowerCase().includes(searchTerm.toLowerCase());
+      issue.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || issue.status?.name === filterStatus;
     const matchesCategory = filterCategory === 'all' || issue.category?.name === filterCategory;
-    const matchesFlagged = filterFlagged === 'all' || 
-                          (filterFlagged === 'flagged' && issue.flag_count > 0) ||
-                          (filterFlagged === 'not-flagged' && issue.flag_count === 0);
+    const matchesFlagged = filterFlagged === 'all' ||
+      (filterFlagged === 'flagged' && issue.flag_count > 0) ||
+      (filterFlagged === 'not-flagged' && issue.flag_count === 0);
     return matchesSearch && matchesStatus && matchesCategory && matchesFlagged;
   });
 
   const handleUpdateStatus = async (issueId: number, status: string) => {
     try {
       setLoading(true);
-      const response = await apiClient.updateIssueStatus(issueId, status as any);
-      
+      // Create a minimal IssueStatus object with just the name
+      const statusObj = { name: status, id: 0, sort_order: 0, is_active: true };
+      const response = await apiClient.updateIssueStatus(issueId, statusObj);
+
       if (response.success) {
-        const updatedIssues = issues.map(issue => 
-          issue.id === issueId ? { ...issue, status: { ...issue.status, name: status } } : issue
+        const updatedIssues = issues.map(issue =>
+          issue.id === issueId ? {
+            ...issue,
+            status: {
+              id: issue.status?.id || 0,
+              name: status,
+              description: issue.status?.description,
+              color_code: issue.status?.color_code,
+              sort_order: issue.status?.sort_order || 0,
+              is_active: issue.status?.is_active || true
+            }
+          } : issue
         );
         onIssuesUpdate(updatedIssues);
       }
@@ -68,7 +80,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
     try {
       setLoading(true);
       const response = await apiClient.hideIssue(issueId);
-      
+
       if (response.success) {
         const updatedIssues = issues.filter(issue => issue.id !== issueId);
         onIssuesUpdate(updatedIssues);
@@ -84,10 +96,10 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
     try {
       setLoading(true);
       const response = await apiClient.flagIssue(issueId, reason);
-      
+
       if (response.success) {
         // Update the issue's flag count
-        const updatedIssues = issues.map(issue => 
+        const updatedIssues = issues.map(issue =>
           issue.id === issueId ? { ...issue, flag_count: (issue.flag_count || 0) + 1 } : issue
         );
         onIssuesUpdate(updatedIssues);
@@ -152,7 +164,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
             </div>
           </div>
         </div>
-        
+
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-white text-xl">
@@ -166,7 +178,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
             </div>
           </div>
         </div>
-        
+
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white text-xl">
@@ -180,7 +192,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
             </div>
           </div>
         </div>
-        
+
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-gradient-to-r from-neon-green to-iridescent-purple rounded-xl flex items-center justify-center text-white text-xl">
@@ -222,10 +234,10 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
               className="input-modern w-full"
             />
           </div>
-          
+
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
+            onChange={(e) => setFilterStatus(e.target.value as 'all' | 'open' | 'in-progress' | 'resolved')}
             className="input-modern"
           >
             <option value="all">All Status</option>
@@ -233,7 +245,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
             <option value="in-progress">In Progress</option>
             <option value="resolved">Resolved</option>
           </select>
-          
+
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
@@ -247,14 +259,14 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
 
           <select
             value={filterFlagged}
-            onChange={(e) => setFilterFlagged(e.target.value as any)}
+            onChange={(e) => setFilterFlagged(e.target.value as 'all' | 'flagged' | 'not-flagged')}
             className="input-modern"
           >
             <option value="all">All Issues</option>
             <option value="flagged">Flagged Only</option>
             <option value="not-flagged">Not Flagged</option>
           </select>
-          
+
           <button
             onClick={() => {
               setSearchTerm('');
@@ -274,16 +286,15 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
         <h3 className="text-xl font-bold gradient-text-charcoal mb-6">
           Issues ({filteredIssues.length})
         </h3>
-        
+
         <div className="space-y-4">
           {filteredIssues.map((issue) => (
             <div
               key={issue.id}
-              className={`glass-surface rounded-xl p-4 border transition-all duration-300 ${
-                (issue.flag_count || 0) > 0 
-                  ? 'border-red-500/50 bg-red-500/5' 
+              className={`glass-surface rounded-xl p-4 border transition-all duration-300 ${(issue.flag_count || 0) > 0
+                  ? 'border-red-500/50 bg-red-500/5'
                   : 'border-glass-border hover:shadow-lg'
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -301,11 +312,11 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                       </span>
                     )}
                   </div>
-                  
+
                   <p className="text-text-secondary text-sm mb-3 line-clamp-2">
                     {issue.description}
                   </p>
-                  
+
                   <div className="flex items-center gap-4 text-xs text-text-secondary">
                     <span>By: {issue.reporter?.user_name || 'Anonymous'}</span>
                     <span>•</span>
@@ -320,7 +331,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2 ml-4">
                   <select
                     value={issue.status?.name || 'open'}
@@ -332,7 +343,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                     <option value="in-progress">In Progress</option>
                     <option value="resolved">Resolved</option>
                   </select>
-                  
+
                   <button
                     onClick={() => setSelectedIssue(issue)}
                     className="px-3 py-1 text-xs glass-surface border border-glass-border rounded-lg text-text-secondary hover:text-accent-primary transition-colors"
@@ -349,7 +360,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                   >
                     Flag
                   </button>
-                  
+
                   <button
                     onClick={() => handleHideIssue(issue.id)}
                     disabled={loading}
@@ -361,7 +372,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
               </div>
             </div>
           ))}
-          
+
           {filteredIssues.length === 0 && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🚨</div>
@@ -426,34 +437,34 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                 ✕
               </button>
             </div>
-            
+
             <div className="space-y-6">
               <div>
                 <label className="text-text-secondary text-sm">Title</label>
                 <p className="text-text-primary font-medium">{selectedIssue.title}</p>
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Description</label>
                 <p className="text-text-primary">{selectedIssue.description}</p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-text-secondary text-sm">Status</label>
                   <p className="text-text-primary">{selectedIssue.status?.name || 'Open'}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-text-secondary text-sm">Category</label>
                   <p className="text-text-primary">{selectedIssue.category?.name || 'Unknown'}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-text-secondary text-sm">Reporter</label>
                   <p className="text-text-primary">{selectedIssue.reporter?.user_name || 'Anonymous'}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-text-secondary text-sm">Created</label>
                   <p className="text-text-primary">
@@ -468,14 +479,14 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                   </div>
                 )}
               </div>
-              
+
               {selectedIssue.address && (
                 <div>
                   <label className="text-text-secondary text-sm">Location</label>
                   <p className="text-text-primary">{selectedIssue.address}</p>
                 </div>
               )}
-              
+
               {selectedIssue.photos && selectedIssue.photos.length > 0 && (
                 <div>
                   <label className="text-text-secondary text-sm">Photos ({selectedIssue.photos.length})</label>
@@ -492,7 +503,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                 </div>
               )}
             </div>
-            
+
             <div className="flex gap-3 mt-6">
               <select
                 value={selectedIssue.status?.name || 'open'}
@@ -506,7 +517,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                 <option value="in-progress">In Progress</option>
                 <option value="resolved">Resolved</option>
               </select>
-              
+
               <button
                 onClick={() => {
                   setShowFlagModal(true);
@@ -515,7 +526,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
               >
                 Flag Issue
               </button>
-              
+
               <button
                 onClick={() => {
                   handleHideIssue(selectedIssue.id);
@@ -525,7 +536,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
               >
                 Hide Issue
               </button>
-              
+
               <button
                 onClick={() => setSelectedIssue(null)}
                 className="px-4 py-2 glass-surface border border-glass-border rounded-xl text-text-secondary hover:text-accent-primary transition-colors"
@@ -555,13 +566,13 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                 ✕
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="text-text-secondary text-sm">Issue</label>
                 <p className="text-text-primary font-medium">{selectedIssue.title}</p>
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Flag Reason</label>
                 <textarea
@@ -574,7 +585,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                 />
               </div>
             </div>
-            
+
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => {
@@ -587,7 +598,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
               >
                 {loading ? 'Flagging...' : 'Submit Flag'}
               </button>
-              
+
               <button
                 onClick={() => {
                   setShowFlagModal(false);

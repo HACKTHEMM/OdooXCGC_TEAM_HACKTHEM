@@ -1,13 +1,13 @@
 // API client for CivicTrack application database operations
 
-import { 
-  Issue, 
-  Category, 
-  IssueStatus, 
-  User, 
-  CreateIssueForm, 
-  UpdateIssueForm, 
-  CreateUserForm, 
+import {
+  Issue,
+  Category,
+  IssueStatus,
+  User,
+  CreateIssueForm,
+  UpdateIssueForm,
+  CreateUserForm,
   LoginForm,
   IssueFilters,
   ApiResponse,
@@ -19,11 +19,11 @@ import {
 } from '../types/database';
 
 // Base configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
 
 class ApiClient {
   private async request<T>(
-    endpoint: string, 
+    endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
@@ -57,14 +57,14 @@ class ApiClient {
 
   // Auth endpoints
   async register(userData: CreateUserForm): Promise<ApiResponse<{ user: User; token: string }>> {
-    return this.request('/auth/register', {
+    return this.request('/users/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
   }
 
   async login(credentials: LoginForm): Promise<ApiResponse<{ user: User; token: string }>> {
-    return this.request('/auth/login', {
+    return this.request('/users/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
@@ -98,7 +98,7 @@ class ApiClient {
         formData.append(key, String(value));
       }
     });
-    
+
     if (issueData.photos) {
       issueData.photos.forEach((photo, index) => {
         formData.append(`photos`, photo);
