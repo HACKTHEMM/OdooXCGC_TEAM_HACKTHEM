@@ -4,28 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/header';
-
-interface Issue {
-    id: number;
-    title: string;
-    category: string;
-    status: 'open' | 'in-progress' | 'resolved' | 'closed';
-    priority: 'low' | 'medium' | 'high' | 'urgent';
-    location: string;
-    reportedBy: string;
-    reportedDate: string;
-    description: string;
-    upvotes: number;
-    assignedTo?: string;
-    estimatedResolution?: string;
-    updates: {
-        id: number;
-        date: string;
-        status: string;
-        message: string;
-        author: string;
-    }[];
-}
+import { Issue, IssueStatusLog } from '../../../types/database';
+import { apiClient, isApiSuccess, formatApiError } from '../../../lib/api-client';
 
 interface Comment {
     id: number;
@@ -41,141 +21,140 @@ export default function IssueDetailPage() {
     const [newComment, setNewComment] = useState('');
     const [hasUpvoted, setHasUpvoted] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [submittingComment, setSubmittingComment] = useState(false);
 
     useEffect(() => {
-        // Mock data - replace with actual API call
-        const mockIssue: Issue = {
-            id: parseInt(params.id as string),
-            title: "Large pothole on Main Street",
-            category: "Roads",
-            status: "in-progress",
-            priority: "high",
-            location: "Main Street, Downtown (coordinates: 40.7128, -74.0060)",
-            reportedBy: "John Doe",
-            reportedDate: "2025-01-28",
-            description: "There is a large pothole on Main Street near the intersection with Oak Avenue. The pothole is approximately 3 feet in diameter and 8 inches deep, causing significant traffic issues and potential damage to vehicles. Several cars have already been damaged, and it poses a safety hazard, especially during nighttime driving. The issue has been ongoing for about a week and seems to be getting worse with recent rain.",
-            upvotes: 45,
-            assignedTo: "Department of Public Works",
-            estimatedResolution: "2025-02-05",
-            updates: [
-                {
-                    id: 1,
-                    date: "2025-01-28",
-                    status: "open",
-                    message: "Issue reported and received for review",
-                    author: "System"
-                },
-                {
-                    id: 2,
-                    date: "2025-01-29",
-                    status: "open",
-                    message: "Issue reviewed and verified. Assigned to Department of Public Works.",
-                    author: "Municipal Coordinator"
-                },
-                {
-                    id: 3,
-                    date: "2025-01-30",
-                    status: "in-progress",
-                    message: "Work crew dispatched to assess the damage and material requirements.",
-                    author: "Department of Public Works"
-                },
-                {
-                    id: 4,
-                    date: "2025-02-01",
-                    status: "in-progress",
-                    message: "Materials ordered. Work scheduled to begin on February 3rd, weather permitting.",
-                    author: "Department of Public Works"
+        const fetchIssue = async () => {
+            try {
+                const issueId = parseInt(params.id as string);
+                if (isNaN(issueId)) {
+                    setError('Invalid issue ID');
+                    setLoading(false);
+                    return;
                 }
-            ]
+
+                const response = await apiClient.getIssueById(issueId);
+                
+                if (isApiSuccess(response)) {
+                    setIssue(response.data);
+                } else {
+                    setError(response.error || 'Failed to load issue');
+                }
+            } catch (err) {
+                setError('Failed to load issue details');
+                console.error('Error fetching issue:', err);
+            } finally {
+                setLoading(false);
+            }
         };
 
-        const mockComments: Comment[] = [
-            {
-                id: 1,
-                author: "Jane Smith",
-                date: "2025-01-29",
-                message: "I can confirm this pothole is really bad. My car's tire was damaged yesterday when I hit it."
-            },
-            {
-                id: 2,
-                author: "Mike Johnson",
-                date: "2025-01-30",
-                message: "Thanks for reporting this! I've been avoiding this street for days."
-            },
-            {
-                id: 3,
-                author: "Sarah Wilson",
-                date: "2025-02-01",
-                message: "Glad to see it's being worked on. This has been a major issue for our neighborhood."
-            }
-        ];
-
-        setIssue(mockIssue);
-        setComments(mockComments);
-        setLoading(false);
+        fetchIssue();
     }, [params.id]);
 
-    const handleUpvote = () => {
-        if (!hasUpvoted && issue) {
-            setIssue(prev => prev ? { ...prev, upvotes: prev.upvotes + 1 } : null);
-            setHasUpvoted(true);
+    const handleUpvote = async () => {
+        if (!issue) return;
+        
+        try {
+            const response = await apiClient.upvoteIssue(issue.id);
+            if (isApiSuccess(response)) {
+                setHasUpvoted(true);
+                // Refresh the issue data to get updated upvote count
+                const updatedResponse = await apiClient.getIssueById(issue.id);
+                if (isApiSuccess(updatedResponse)) {
+                    setIssue(updatedResponse.data);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to upvote issue:', err);
         }
     };
 
-    const handleCommentSubmit = (e: React.FormEvent) => {
+    const handleCommentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newComment.trim()) {
-            const comment: Comment = {
-                id: comments.length + 1,
-                author: "Current User", // Replace with actual user name
-                date: new Date().toISOString().split('T')[0],
-                message: newComment.trim()
-            };
-            setComments(prev => [...prev, comment]);
-            setNewComment('');
+        if (!issue || !newComment.trim()) return;
+
+        try {
+            setSubmittingComment(true);
+            const response = await apiClient.addComment(issue.id, newComment);
+            
+            if (isApiSuccess(response)) {
+                setNewComment('');
+                // Refresh the issue data to get updated comments
+                const updatedResponse = await apiClient.getIssueById(issue.id);
+                if (isApiSuccess(updatedResponse)) {
+                    setIssue(updatedResponse.data);
+                }
+            } else {
+                console.error('Failed to add comment:', response.error);
+            }
+        } catch (err) {
+            console.error('Failed to add comment:', err);
+        } finally {
+            setSubmittingComment(false);
         }
     };
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'open': return 'bg-red-100 text-red-800 border-red-200';
-            case 'in-progress': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            case 'resolved': return 'bg-green-100 text-green-800 border-green-200';
-            case 'closed': return 'bg-gray-100 text-gray-800 border-gray-200';
-            default: return 'bg-gray-100 text-gray-800 border-gray-200';
+            case 'open':
+                return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+            case 'in-progress':
+                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+            case 'resolved':
+                return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+            case 'closed':
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+            default:
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
         }
     };
 
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case 'urgent': return 'bg-red-500 text-white';
-            case 'high': return 'bg-orange-500 text-white';
-            case 'medium': return 'bg-yellow-500 text-white';
-            case 'low': return 'bg-green-500 text-white';
-            default: return 'bg-gray-500 text-white';
-        }
+    const formatDate = (date: Date) => {
+        return new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gradient-to-br from-cloud-white via-blue-50/50 to-purple-50/30 dark:from-midnight dark:via-purple-900/10 dark:to-blue-900/10">
                 <Header />
-                <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-bright-blue mx-auto mb-4"></div>
+                        <p className="text-slate-gray dark:text-soft-gray">Loading issue details...</p>
+                    </div>
                 </div>
             </div>
         );
     }
 
-    if (!issue) {
+    if (error || !issue) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gradient-to-br from-cloud-white via-blue-50/50 to-purple-50/30 dark:from-midnight dark:via-purple-900/10 dark:to-blue-900/10">
                 <Header />
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="flex items-center justify-center min-h-screen">
                     <div className="text-center">
-                        <h1 className="text-2xl font-bold text-gray-900 mb-4">Issue Not Found</h1>
-                        <p className="text-gray-600 mb-6">The issue you&apos;re looking for doesn&apos;t exist or has been removed.</p>
-                        <Link href="/issues" className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                        <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-2">
+                            Issue Not Found
+                        </h3>
+                        <p className="text-slate-gray dark:text-soft-gray mb-6">
+                            {error || 'The issue you are looking for could not be found.'}
+                        </p>
+                        <Link
+                            href="/issues"
+                            className="glass-surface border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green px-6 py-3 rounded-xl hover:shadow-neon transition-all duration-300"
+                        >
                             Back to Issues
                         </Link>
                     </div>
@@ -185,154 +164,169 @@ export default function IssueDetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-to-br from-cloud-white via-blue-50/50 to-purple-50/30 dark:from-midnight dark:via-purple-900/10 dark:to-blue-900/10">
             <Header />
 
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Animated background elements */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-bright-blue/20 to-vibrant-pink/20 dark:from-neon-green/20 dark:to-iridescent-purple/20 rounded-full blur-3xl animate-float"></div>
+                <div className="absolute bottom-20 right-10 w-64 h-64 bg-gradient-to-r from-vibrant-pink/20 to-bright-blue/20 dark:from-iridescent-purple/20 dark:to-neon-green/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
+            </div>
+
+            {/* Main Content */}
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
                 {/* Breadcrumb */}
                 <div className="mb-6">
-                    <nav className="flex" aria-label="Breadcrumb">
-                        <ol className="inline-flex items-center space-x-1 md:space-x-3">
-                            <li className="inline-flex items-center">
-                                <Link href="/" className="text-gray-700 hover:text-blue-600">Home</Link>
-                            </li>
-                            <li>
-                                <div className="flex items-center">
-                                    <span className="mx-2 text-gray-400">/</span>
-                                    <Link href="/issues" className="text-gray-700 hover:text-blue-600">Issues</Link>
-                                </div>
-                            </li>
-                            <li aria-current="page">
-                                <div className="flex items-center">
-                                    <span className="mx-2 text-gray-400">/</span>
-                                    <span className="text-gray-500">Issue #{issue.id}</span>
-                                </div>
-                            </li>
-                        </ol>
-                    </nav>
+                    <Link
+                        href="/issues"
+                        className="flex items-center gap-2 text-slate-gray dark:text-soft-gray hover:text-charcoal dark:hover:text-white transition-colors"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Back to Issues
+                    </Link>
                 </div>
 
-                {/* Main Issue Card */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    {/* Header */}
-                    <div className="flex justify-between items-start mb-6">
+                {/* Issue Header */}
+                <div className="glass-surface rounded-2xl p-6 border border-glass-light-hover dark:border-glass-dark-hover mb-8">
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                         <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                                <h1 className="text-2xl font-bold text-gray-900">{issue.title}</h1>
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(issue.priority)}`}>
-                                    {issue.priority.toUpperCase()}
+                            <div className="flex items-center gap-3 mb-4">
+                                <h1 className="text-3xl md:text-4xl font-bold text-charcoal dark:text-white">
+                                    {issue.title}
+                                </h1>
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(issue.status?.name || 'open')}`}>
+                                    {issue.status?.name || 'Open'}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-600">
-                                <span>Issue #{issue.id}</span>
-                                <span>•</span>
-                                <span>📍 {issue.location}</span>
-                                <span>•</span>
-                                <span>📅 Reported {issue.reportedDate}</span>
-                                <span>•</span>
-                                <span>👤 {issue.reportedBy}</span>
-                            </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-3">
-                            <span className={`px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(issue.status)}`}>
-                                {issue.status.charAt(0).toUpperCase() + issue.status.slice(1).replace('-', ' ')}
-                            </span>
-                            <span className="text-sm text-gray-500">#{issue.category}</span>
-                        </div>
-                    </div>
-
-                    {/* Description */}
-                    <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
-                        <p className="text-gray-700 leading-relaxed">{issue.description}</p>
-                    </div>
-
-                    {/* Issue Details */}
-                    {issue.assignedTo && (
-                        <div className="grid md:grid-cols-2 gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-700 mb-1">Assigned To</h3>
-                                <p className="text-gray-900">{issue.assignedTo}</p>
-                            </div>
-                            {issue.estimatedResolution && (
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-700 mb-1">Estimated Resolution</h3>
-                                    <p className="text-gray-900">{issue.estimatedResolution}</p>
+                            
+                            <p className="text-lg text-slate-gray dark:text-soft-gray mb-6">
+                                {issue.description}
+                            </p>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium text-charcoal dark:text-white">Category:</span>
+                                    <span className="text-slate-gray dark:text-soft-gray">
+                                        {issue.category?.name || 'Unknown'}
+                                    </span>
                                 </div>
-                            )}
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium text-charcoal dark:text-white">Reported by:</span>
+                                    <span className="text-slate-gray dark:text-soft-gray">
+                                        {issue.reporter?.user_name || 'Anonymous'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium text-charcoal dark:text-white">Date:</span>
+                                    <span className="text-slate-gray dark:text-soft-gray">
+                                        {formatDate(issue.created_at)}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium text-charcoal dark:text-white">Location:</span>
+                                    <span className="text-slate-gray dark:text-soft-gray">
+                                        {issue.address || issue.location_description || 'Location not specified'}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                        <button
-                            onClick={handleUpvote}
-                            disabled={hasUpvoted}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${hasUpvoted
-                                ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                        
+                        <div className="flex flex-col gap-4">
+                            <button
+                                onClick={handleUpvote}
+                                disabled={hasUpvoted}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                                    hasUpvoted
+                                        ? 'bg-green-500 text-white cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white hover:shadow-neon'
                                 }`}
-                        >
-                            <span>👍</span>
-                            <span>{hasUpvoted ? 'Upvoted' : 'Upvote'} ({issue.upvotes})</span>
-                        </button>
-                        <div className="flex gap-3">
-                            <button className="text-gray-600 hover:text-gray-700">Share</button>
-                            <button className="text-gray-600 hover:text-gray-700">Follow Updates</button>
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                </svg>
+                                {hasUpvoted ? 'Upvoted' : 'Upvote'}
+                            </button>
+                            
+                            <Link
+                                href="/report"
+                                className="px-6 py-3 rounded-xl border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green hover:shadow-neon transition-all duration-300 text-center font-semibold"
+                            >
+                                Report Similar Issue
+                            </Link>
                         </div>
                     </div>
                 </div>
 
-                {/* Status Updates */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Status Updates</h2>
-                    <div className="space-y-4">
-                        {issue.updates.map((update, index) => (
-                            <div key={update.id} className="flex gap-4">
-                                <div className="flex-shrink-0">
-                                    <div className={`w-3 h-3 rounded-full mt-2 ${index === issue.updates.length - 1 ? 'bg-blue-500' : 'bg-gray-300'
-                                        }`}></div>
-                                    {index < issue.updates.length - 1 && (
-                                        <div className="w-0.5 h-8 bg-gray-200 ml-1 mt-1"></div>
-                                    )}
+                {/* Photos Section */}
+                {issue.photos && issue.photos.length > 0 && (
+                    <div className="glass-surface rounded-2xl p-6 border border-glass-light-hover dark:border-glass-dark-hover mb-8">
+                        <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-4">Photos</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {issue.photos.map((photo) => (
+                                <div key={photo.id} className="aspect-video rounded-xl overflow-hidden">
+                                    <img
+                                        src={photo.photo_url}
+                                        alt={`Issue photo ${photo.photo_order}`}
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-medium text-gray-900">{update.author}</span>
-                                        <span className="text-sm text-gray-500">{update.date}</span>
-                                    </div>
-                                    <p className="text-gray-700">{update.message}</p>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {/* Status History */}
+                {issue.status_history && issue.status_history.length > 0 && (
+                    <div className="glass-surface rounded-2xl p-6 border border-glass-light-hover dark:border-glass-dark-hover mb-8">
+                        <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-4">Status History</h3>
+                        <div className="space-y-4">
+                            {issue.status_history.map((log) => (
+                                <div key={log.id} className="flex items-start gap-4">
+                                    <div className="w-3 h-3 bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple rounded-full mt-2"></div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-medium text-charcoal dark:text-white">
+                                                {log.new_status?.name || 'Status Updated'}
+                                            </span>
+                                            <span className="text-sm text-slate-gray dark:text-soft-gray">
+                                                {formatDate(log.changed_at)}
+                                            </span>
+                                        </div>
+                                        {log.notes && (
+                                            <p className="text-slate-gray dark:text-soft-gray text-sm">
+                                                {log.notes}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Comments Section */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                        Community Comments ({comments.length})
-                    </h2>
-
+                <div className="glass-surface rounded-2xl p-6 border border-glass-light-hover dark:border-glass-dark-hover">
+                    <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-4">Comments</h3>
+                    
                     {/* Add Comment Form */}
                     <form onSubmit={handleCommentSubmit} className="mb-6">
-                        <textarea
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Add a comment to help or provide additional information..."
-                            rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <div className="mt-3 flex justify-end">
+                        <div className="flex gap-4">
+                            <textarea
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                placeholder="Add a comment..."
+                                className="flex-1 px-4 py-3 rounded-xl border border-glass-light-hover dark:border-glass-dark-hover bg-white/50 dark:bg-black/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-bright-blue dark:focus:ring-neon-green text-charcoal dark:text-white resize-none"
+                                rows={3}
+                                disabled={submittingComment}
+                            />
                             <button
                                 type="submit"
-                                disabled={!newComment.trim()}
-                                className={`px-4 py-2 rounded-md transition-colors ${newComment.trim()
-                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    }`}
+                                disabled={!newComment.trim() || submittingComment}
+                                className="px-6 py-3 rounded-xl bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white hover:shadow-neon transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Post Comment
+                                {submittingComment ? 'Posting...' : 'Post Comment'}
                             </button>
                         </div>
                     </form>
@@ -340,17 +334,23 @@ export default function IssueDetailPage() {
                     {/* Comments List */}
                     <div className="space-y-4">
                         {comments.length === 0 ? (
-                            <p className="text-gray-500 text-center py-8">
+                            <p className="text-slate-gray dark:text-soft-gray text-center py-8">
                                 No comments yet. Be the first to comment!
                             </p>
                         ) : (
                             comments.map((comment) => (
-                                <div key={comment.id} className="border-l-4 border-blue-100 pl-4 py-2">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-medium text-gray-900">{comment.author}</span>
-                                        <span className="text-sm text-gray-500">{comment.date}</span>
+                                <div key={comment.id} className="border-b border-glass-light-hover dark:border-glass-dark-hover pb-4 last:border-b-0">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="font-medium text-charcoal dark:text-white">
+                                            {comment.author}
+                                        </span>
+                                        <span className="text-sm text-slate-gray dark:text-soft-gray">
+                                            {comment.date}
+                                        </span>
                                     </div>
-                                    <p className="text-gray-700">{comment.message}</p>
+                                    <p className="text-slate-gray dark:text-soft-gray">
+                                        {comment.message}
+                                    </p>
                                 </div>
                             ))
                         )}

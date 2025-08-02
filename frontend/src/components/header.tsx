@@ -8,13 +8,13 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="glass-surface border-b border-glass-light-hover dark:border-glass-dark-hover backdrop-blur-glass sticky top-0 z-50">
+    <header className="glass-surface border-b border-glass-border backdrop-blur-[20px] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-3 group">
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-green-400 dark:to-purple-400 bg-clip-text text-transparent">
+              <span className="text-xl font-bold gradient-text-accent animate-glow">
                 CivicTrack
               </span>
             </Link>
@@ -25,19 +25,19 @@ export default function Header() {
             <nav className="flex items-center space-x-1">
               <Link
                 href="/home"
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="text-text-primary hover:text-accent-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg hover:scale-105"
               >
                 Home
               </Link>
               <Link
                 href="/issues"
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="text-text-primary hover:text-accent-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg hover:scale-105"
               >
                 Issues
               </Link>
               <Link
                 href="/report"
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="text-text-primary hover:text-accent-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg hover:scale-105"
               >
                 Report
               </Link>
@@ -47,15 +47,22 @@ export default function Header() {
               <ThemeToggle />
 
               <Link
+                href="/admin"
+                className="text-text-primary hover:text-accent-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
+              >
+                Admin
+              </Link>
+
+              <Link
                 href="/login"
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                className="text-text-primary hover:text-accent-primary px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
               >
                 Login
               </Link>
 
               <Link
                 href="/signup"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-green-500 dark:to-purple-500 text-white hover:shadow-lg px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95"
+                className="btn-modern px-6 py-2 rounded-lg text-sm font-medium hover:scale-105 active:scale-95"
               >
                 Sign Up
               </Link>
@@ -67,7 +74,7 @@ export default function Header() {
             <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 p-2 rounded-lg transition-colors"
+              className="text-text-primary hover:text-accent-primary p-2 rounded-lg transition-all duration-300 hover:bg-glass-bg"
               aria-label="Toggle menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,40 +90,47 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-300 dark:border-gray-600">
+          <div className="md:hidden py-4 border-t border-glass-border">
             <div className="flex flex-col space-y-2">
               <Link
                 href="/home"
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="text-text-primary hover:text-accent-primary px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
               <Link
                 href="/issues"
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="text-text-primary hover:text-accent-primary px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Issues
               </Link>
               <Link
                 href="/report"
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="text-text-primary hover:text-accent-primary px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Report
               </Link>
-              <div className="border-t border-gray-300 dark:border-gray-600 pt-4 mt-4">
+              <Link
+                href="/admin"
+                className="text-text-primary hover:text-accent-primary px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Admin
+              </Link>
+              <div className="pt-4 border-t border-glass-border">
                 <Link
                   href="/login"
-                  className="block text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-green-400 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200"
+                  className="block text-text-primary hover:text-accent-primary px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-glass-bg"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Login
                 </Link>
                 <Link
                   href="/signup"
-                  className="block bg-gradient-to-r from-blue-600 to-purple-600 dark:from-green-500 dark:to-purple-500 text-white hover:shadow-lg px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 mt-2"
+                  className="block btn-modern mt-2 text-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sign Up

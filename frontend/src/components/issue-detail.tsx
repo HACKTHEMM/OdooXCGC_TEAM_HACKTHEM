@@ -163,7 +163,7 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
             <div className="glass-surface rounded-2xl p-8 border border-glass-light-hover dark:border-glass-dark-hover backdrop-blur-glass">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-charcoal to-slate-gray dark:from-white dark:to-soft-gray bg-clip-text text-transparent mb-4">{issue.title}</h1>
+                  <h1 className="text-3xl font-bold gradient-text-charcoal mb-4">{issue.title}</h1>
                   <div className="flex flex-wrap gap-3 mb-6">
                     <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border ${getCategoryColor(issue.category)} backdrop-blur-sm`}>
                       {getCategoryIcon(issue.category)} {getCategoryLabel(issue.category)}

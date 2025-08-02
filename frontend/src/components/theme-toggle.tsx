@@ -23,21 +23,22 @@ export default function ThemeToggle() {
 
     if (!mounted) {
         return (
-            <div className="w-14 h-8 bg-glass-light dark:bg-glass-dark rounded-full border border-glass-light-hover dark:border-glass-dark-hover"></div>
+            <div className="w-14 h-8 bg-glass-bg rounded-full border border-glass-border"></div>
         );
     }
 
     return (
         <button
             onClick={toggleTheme}
-            className="relative w-14 h-8 bg-glass-light dark:bg-glass-dark border border-glass-light-hover dark:border-glass-dark-hover rounded-full p-1 transition-all duration-300 hover:border-bright-blue dark:hover:border-neon-green focus:outline-none focus:ring-2 focus:ring-bright-blue dark:focus:ring-neon-green focus:ring-opacity-50"
+            className="relative w-14 h-8 bg-glass-bg border border-glass-border rounded-full p-1 transition-all duration-300 hover:border-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50"
             aria-label="Toggle theme"
         >
             <div
-                className={`w-6 h-6 rounded-full transition-all duration-300 flex items-center justify-center ${isDark
-                        ? 'translate-x-6 bg-neon-gradient shadow-neon'
+                className={`w-6 h-6 rounded-full transition-all duration-300 flex items-center justify-center ${
+                    isDark
+                        ? 'translate-x-6 bg-gradient-to-r from-neon-green to-iridescent-purple neon-glow'
                         : 'translate-x-0 bg-gradient-to-r from-bright-blue to-vibrant-pink shadow-lg'
-                    }`}
+                }`}
             >
                 {isDark ? (
                     <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

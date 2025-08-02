@@ -2,27 +2,71 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { CreateUserForm } from '../../types/database';
+import { apiClient, isApiSuccess, formatApiError } from '../../lib/api-client';
 
 export default function SignupPage() {
-  const [formData, setFormData] = useState({
-    username: '',
+  const [formData, setFormData] = useState<CreateUserForm>({
+    user_name: '',
     email: '',
     phone: '',
     password: '',
-    confirmPassword: ''
+    is_anonymous: false
   });
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value, type, checked } = e.target;
+    
+    if (name === 'confirmPassword') {
+      setConfirmPassword(value);
+    } else {
+      setFormData({
+        ...formData,
+        [name]: type === 'checkbox' ? checked : value
+      });
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log('Registration attempt:', formData);
+    setLoading(true);
+    setError(null);
+
+    // Validate passwords match
+    if (formData.password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.user_name.trim() || !formData.email.trim() || !formData.password.trim()) {
+      setError('Please fill in all required fields');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await apiClient.register(formData);
+      
+      if (isApiSuccess(response)) {
+        // Store token and redirect
+        localStorage.setItem('auth_token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // Redirect to home page
+        window.location.href = '/home';
+      } else {
+        setError(response.error || 'Registration failed');
+      }
+    } catch (err) {
+      setError(formatApiError(err instanceof Error ? err.message : 'Registration failed'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,31 +81,25 @@ export default function SignupPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-neon-gradient rounded-xl flex items-center justify-center shadow-neon group-hover:shadow-purple transition-all duration-300">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple bg-clip-text text-transparent">
-              CivicTracker
+            <span className="text-xl font-bold gradient-text-accent animate-glow">
+              CivicTrack
             </span>
           </Link>
           <Link
             href="/"
-            className="glass-surface border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green px-4 py-2 rounded-xl hover:shadow-neon transition-all duration-300 font-medium"
+            className="glass-surface border border-accent-primary text-accent-primary px-4 py-2 rounded-xl hover:shadow-lg transition-all duration-300 font-medium hover:scale-105"
           >
             Home
           </Link>
         </div>
 
-        {/* Registration Form */}
-        <div className="glass-surface rounded-2xl p-8 border border-glass-light-hover dark:border-glass-dark-hover backdrop-blur-glass">
+        {/* Signup Form */}
+        <div className="card-modern p-8 animate-slide-up">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-charcoal to-slate-gray dark:from-white dark:to-soft-gray bg-clip-text text-transparent mb-2">
-              Join CivicTracker
+            <h2 className="text-3xl font-bold gradient-text-charcoal mb-2">
+              Join the Movement
             </h2>
-            <p className="text-slate-gray dark:text-soft-gray">
+            <p className="text-text-secondary">
               Create your account and start making a difference
             </p>
           </div>
@@ -69,25 +107,26 @@ export default function SignupPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Username Field */}
             <div>
-              <label htmlFor="username" className="block text-charcoal dark:text-white text-sm font-medium mb-2">
-                Username
+              <label htmlFor="user_name" className="block text-text-primary text-sm font-medium mb-2">
+                Username *
               </label>
               <input
                 type="text"
-                id="username"
-                name="username"
-                value={formData.username}
+                id="user_name"
+                name="user_name"
+                value={formData.user_name}
                 onChange={handleChange}
-                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                className="input-modern w-full"
                 placeholder="Choose a username"
                 required
+                disabled={loading}
               />
             </div>
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-charcoal dark:text-white text-sm font-medium mb-2">
-                Email Address
+              <label htmlFor="email" className="block text-text-primary text-sm font-medium mb-2">
+                Email Address *
               </label>
               <input
                 type="email"
@@ -95,15 +134,16 @@ export default function SignupPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                className="input-modern w-full"
                 placeholder="Enter your email"
                 required
+                disabled={loading}
               />
             </div>
 
             {/* Phone Field */}
             <div>
-              <label htmlFor="phone" className="block text-charcoal dark:text-white text-sm font-medium mb-2">
+              <label htmlFor="phone" className="block text-text-primary text-sm font-medium mb-2">
                 Phone Number
               </label>
               <input
@@ -112,16 +152,16 @@ export default function SignupPage() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
-                placeholder="Enter your phone number"
-                required
+                className="input-modern w-full"
+                placeholder="Enter your phone number (optional)"
+                disabled={loading}
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-charcoal dark:text-white text-sm font-medium mb-2">
-                Password
+              <label htmlFor="password" className="block text-text-primary text-sm font-medium mb-2">
+                Password *
               </label>
               <input
                 type="password"
@@ -129,62 +169,83 @@ export default function SignupPage() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                className="input-modern w-full"
                 placeholder="Create a strong password"
                 required
+                disabled={loading}
               />
             </div>
 
             {/* Confirm Password Field */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-charcoal dark:text-white text-sm font-medium mb-2">
-                Confirm Password
+              <label htmlFor="confirmPassword" className="block text-text-primary text-sm font-medium mb-2">
+                Confirm Password *
               </label>
               <input
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
-                value={formData.confirmPassword}
+                value={confirmPassword}
                 onChange={handleChange}
-                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                className="input-modern w-full"
                 placeholder="Confirm your password"
                 required
+                disabled={loading}
               />
             </div>
 
-            {/* Submit Button */}
-            <div className="space-y-4">
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white py-3 rounded-xl font-semibold hover:shadow-neon dark:hover:shadow-purple transition-all duration-300 hover:scale-105"
-              >
-                Create Account
-              </button>
-
-              {/* Terms */}
-              <p className="text-xs text-slate-gray dark:text-soft-gray text-center">
-                By creating an account, you agree to our{' '}
-                <Link href="/terms" className="text-bright-blue dark:text-neon-green hover:text-vibrant-pink dark:hover:text-iridescent-purple transition-colors">
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link href="/privacy" className="text-bright-blue dark:text-neon-green hover:text-vibrant-pink dark:hover:text-iridescent-purple transition-colors">
-                  Privacy Policy
-                </Link>
-              </p>
+            {/* Anonymous Option */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="is_anonymous"
+                name="is_anonymous"
+                checked={formData.is_anonymous}
+                onChange={handleChange}
+                className="w-4 h-4 text-accent-primary bg-glass-bg border-glass-border rounded focus:ring-accent-primary focus:ring-2"
+                disabled={loading}
+              />
+              <label htmlFor="is_anonymous" className="ml-2 text-sm text-text-secondary">
+                Keep my identity anonymous when reporting issues
+              </label>
             </div>
 
-            {/* Login Link */}
-            <div className="text-center pt-4 border-t border-glass-light-hover dark:border-glass-dark-hover">
-              <p className="text-slate-gray dark:text-soft-gray mb-2">Already have an account?</p>
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-modern w-full flex items-center justify-center"
+            >
+              {loading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Creating account...</span>
+                </div>
+              ) : (
+                'Create Account'
+              )}
+            </button>
+          </form>
+
+          {/* Login Link */}
+          <div className="mt-6 text-center">
+            <p className="text-text-secondary text-sm">
+              Already have an account?{' '}
               <Link
                 href="/login"
-                className="glass-surface border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green px-6 py-2 rounded-xl hover:shadow-neon transition-all duration-300 font-medium inline-block"
+                className="text-accent-primary hover:text-accent-secondary font-medium transition-colors duration-300"
               >
-                Sign In
+                Sign in here
               </Link>
-            </div>
-          </form>
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -1,21 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import Header from '@/components/header';
-import ReportIssueForm from '@/components/report-issue-form';
+import Header from '../../components/header';
+import ReportIssueForm from '../../components/report-issue-form';
+import { CreateIssueForm } from '../../types/database';
+import { apiClient, isApiSuccess, formatApiError } from '../../lib/api-client';
 
 export default function ReportPage() {
     const [isFormVisible, setIsFormVisible] = useState(false);
 
-    const handleSubmitIssue = async (issueData: unknown) => {
+    const handleSubmitIssue = async (issueData: CreateIssueForm) => {
         try {
-            // Handle form submission logic here
-            console.log('Issue submitted:', issueData);
-            // Show success message or redirect
-            alert('Issue submitted successfully!');
-            setIsFormVisible(false);
+            const response = await apiClient.createIssue(issueData);
+            
+            if (isApiSuccess(response)) {
+                // Show success message
+                alert('Issue submitted successfully!');
+                setIsFormVisible(false);
+                
+                // Optionally redirect to the new issue page
+                // window.location.href = `/issues/${response.data.id}`;
+            } else {
+                throw new Error(response.error || 'Failed to submit issue');
+            }
         } catch (error) {
             console.error('Failed to submit issue:', error);
+            alert(formatApiError(error instanceof Error ? error.message : 'Failed to submit issue'));
         }
     };
 
@@ -43,15 +53,15 @@ export default function ReportPage() {
                 <div className="text-center">
                     <div className="animate-slide-up">
                         <h1 className="text-5xl md:text-7xl font-bold mb-8">
-                            <span className="bg-gradient-to-r from-charcoal to-slate-gray dark:from-white dark:to-soft-gray bg-clip-text text-transparent">
+                            <span className="gradient-text-charcoal">
                                 Report a
                             </span>
                             <br />
-                            <span className="bg-gradient-to-r from-bright-blue via-vibrant-pink to-bright-blue dark:from-neon-green dark:via-iridescent-purple dark:to-neon-green bg-clip-text text-transparent animate-glow">
+                            <span className="gradient-text-accent animate-glow">
                                 Community Issue
                             </span>
                         </h1>
-                        <p className="text-xl md:text-2xl text-slate-gray dark:text-soft-gray mb-12 max-w-4xl mx-auto leading-relaxed">
+                        <p className="text-xl md:text-2xl text-text-secondary mb-12 max-w-4xl mx-auto leading-relaxed">
                             Help make your city smarter by reporting issues that matter. Our AI-powered platform ensures your voice is heard and problems get solved faster.
                         </p>
                     </div>
@@ -59,7 +69,7 @@ export default function ReportPage() {
                     <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
                         <button
                             onClick={() => setIsFormVisible(true)}
-                            className="group bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white px-12 py-6 rounded-2xl text-xl font-semibold hover:shadow-neon dark:hover:shadow-purple transition-all duration-300 hover:scale-105 hover:-translate-y-1"
+                            className="group btn-modern px-12 py-6 rounded-2xl text-xl font-semibold hover:scale-105 hover:-translate-y-1"
                         >
                             <span className="flex items-center gap-3">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,7 +78,7 @@ export default function ReportPage() {
                                 Start Reporting
                             </span>
                         </button>
-                        <button className="group glass-surface border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green px-12 py-6 rounded-2xl text-xl font-semibold hover:shadow-neon dark:hover:shadow-neon transition-all duration-300 hover:scale-105 hover:-translate-y-1">
+                        <button className="group glass-surface border border-accent-primary text-accent-primary px-12 py-6 rounded-2xl text-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 hover:-translate-y-1">
                             <span className="flex items-center gap-3">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -84,51 +94,51 @@ export default function ReportPage() {
             <section className="relative py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16 animate-slide-up">
-                        <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-charcoal to-slate-gray dark:from-white dark:to-soft-gray bg-clip-text text-transparent mb-6">
+                        <h2 className="text-4xl md:text-5xl font-bold gradient-text-charcoal mb-6">
                             Why Report With Us?
                         </h2>
-                        <p className="text-xl text-slate-gray dark:text-soft-gray max-w-3xl mx-auto">
+                        <p className="text-xl text-text-secondary max-w-3xl mx-auto">
                             Advanced AI technology ensures your reports reach the right authorities and get resolved efficiently
                         </p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {/* Feature 1 */}
-                        <div className="group glass-surface rounded-2xl p-8 hover:border-bright-blue dark:hover:border-neon-green transition-all duration-300 hover:-translate-y-2 hover:shadow-glass-light dark:hover:shadow-glass-dark">
+                        <div className="group card-modern p-8 hover:border-accent-primary transition-all duration-300 hover:-translate-y-2">
                             <div className="w-16 h-16 bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
-                            <h3 className="text-2xl font-bold text-charcoal dark:text-white mb-4">Instant AI Processing</h3>
-                            <p className="text-slate-gray dark:text-soft-gray leading-relaxed">
+                            <h3 className="text-2xl font-bold text-text-primary mb-4">Instant AI Processing</h3>
+                            <p className="text-text-secondary leading-relaxed">
                                 Our AI automatically categorizes your report, determines priority, and routes it to the appropriate department for immediate action.
                             </p>
                         </div>
 
                         {/* Feature 2 */}
-                        <div className="group glass-surface rounded-2xl p-8 hover:border-vibrant-pink dark:hover:border-iridescent-purple transition-all duration-300 hover:-translate-y-2 hover:shadow-glass-light dark:hover:shadow-glass-dark" style={{ animationDelay: '0.1s' }}>
+                        <div className="group card-modern p-8 hover:border-accent-secondary transition-all duration-300 hover:-translate-y-2" style={{ animationDelay: '0.1s' }}>
                             <div className="w-16 h-16 bg-gradient-to-r from-vibrant-pink to-bright-blue dark:from-iridescent-purple dark:to-neon-green rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                             </div>
-                            <h3 className="text-2xl font-bold text-charcoal dark:text-white mb-4">Smart Location Tracking</h3>
-                            <p className="text-slate-gray dark:text-soft-gray leading-relaxed">
+                            <h3 className="text-2xl font-bold text-text-primary mb-4">Smart Location Tracking</h3>
+                            <p className="text-text-secondary leading-relaxed">
                                 Precise GPS integration with visual mapping ensures your issue is reported at the exact location, speeding up response times.
                             </p>
                         </div>
 
                         {/* Feature 3 */}
-                        <div className="group glass-surface rounded-2xl p-8 hover:border-bright-blue dark:hover:border-neon-green transition-all duration-300 hover:-translate-y-2 hover:shadow-glass-light dark:hover:shadow-glass-dark" style={{ animationDelay: '0.2s' }}>
+                        <div className="group card-modern p-8 hover:border-accent-primary transition-all duration-300 hover:-translate-y-2" style={{ animationDelay: '0.2s' }}>
                             <div className="w-16 h-16 bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 7H4l5-5v5zm0 10h6l-6 6v-6zm6-10h5l-5-5v5z" />
                                 </svg>
                             </div>
-                            <h3 className="text-2xl font-bold text-charcoal dark:text-white mb-4">Real-Time Updates</h3>
-                            <p className="text-slate-gray dark:text-soft-gray leading-relaxed">
+                            <h3 className="text-2xl font-bold text-text-primary mb-4">Real-Time Updates</h3>
+                            <p className="text-text-secondary leading-relaxed">
                                 Track your report&apos;s progress with live updates, from initial review to final resolution, keeping you informed every step of the way.
                             </p>
                         </div>
@@ -140,10 +150,10 @@ export default function ReportPage() {
             <section className="relative py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16 animate-slide-up">
-                        <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-charcoal to-slate-gray dark:from-white dark:to-soft-gray bg-clip-text text-transparent mb-6">
+                        <h2 className="text-4xl md:text-5xl font-bold gradient-text-charcoal mb-6">
                             Report Categories
                         </h2>
-                        <p className="text-xl text-slate-gray dark:text-soft-gray">
+                        <p className="text-xl text-text-secondary">
                             Choose from our comprehensive list of municipal issue categories
                         </p>
                     </div>
@@ -160,13 +170,13 @@ export default function ReportPage() {
                             <button
                                 key={index}
                                 onClick={() => setIsFormVisible(true)}
-                                className="group glass-surface rounded-2xl p-6 text-center hover:border-bright-blue dark:hover:border-neon-green transition-all duration-300 hover:-translate-y-1 interactive-scale"
+                                className="group card-modern p-6 text-center hover:border-accent-primary transition-all duration-300 hover:-translate-y-1 interactive-scale"
                                 style={{ animationDelay: `${index * 0.1}s` }}
                             >
                                 <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{category.icon}</div>
-                                <h3 className="text-lg font-bold text-charcoal dark:text-white mb-2">{category.name}</h3>
-                                <p className="text-sm text-slate-gray dark:text-soft-gray mb-4">{category.description}</p>
-                                <div className={`h-1 bg-gradient-to-r ${category.gradient} dark:${category.gradient} rounded-full opacity-70 group-hover:opacity-100 transition-opacity`}></div>
+                                <h3 className="text-lg font-bold text-text-primary mb-2">{category.name}</h3>
+                                <p className="text-sm text-text-secondary mb-4">{category.description}</p>
+                                <div className={`h-1 bg-gradient-to-r ${category.gradient} rounded-full opacity-70 group-hover:opacity-100 transition-opacity`}></div>
                             </button>
                         ))}
                     </div>
@@ -176,40 +186,40 @@ export default function ReportPage() {
             {/* Quick Stats */}
             <section className="relative py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="glass-surface rounded-3xl p-8 md:p-12 border border-glass-light-hover dark:border-glass-dark-hover">
+                    <div className="card-modern p-8 md:p-12">
                         <div className="text-center mb-12">
-                            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-charcoal to-slate-gray dark:from-white dark:to-soft-gray bg-clip-text text-transparent mb-6">
+                            <h2 className="text-4xl md:text-5xl font-bold gradient-text-charcoal mb-6">
                                 Community Impact
                             </h2>
-                            <p className="text-xl text-slate-gray dark:text-soft-gray">
+                            <p className="text-xl text-text-secondary">
                                 See how reporting makes a real difference in our community
                             </p>
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                             <div className="text-center group hover-float">
-                                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple bg-clip-text text-transparent mb-3">
+                                <div className="text-4xl md:text-5xl font-bold gradient-text-accent mb-3">
                                     1,248
                                 </div>
-                                <div className="text-slate-gray dark:text-soft-gray font-medium">Issues Reported</div>
+                                <div className="text-text-secondary font-medium">Issues Reported</div>
                             </div>
                             <div className="text-center group hover-float" style={{ animationDelay: '0.1s' }}>
-                                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-neon-green to-bright-blue dark:from-iridescent-purple dark:to-neon-green bg-clip-text text-transparent mb-3">
+                                <div className="text-4xl md:text-5xl font-bold gradient-text-accent mb-3">
                                     892
                                 </div>
-                                <div className="text-slate-gray dark:text-soft-gray font-medium">Successfully Resolved</div>
+                                <div className="text-text-secondary font-medium">Successfully Resolved</div>
                             </div>
                             <div className="text-center group hover-float" style={{ animationDelay: '0.2s' }}>
-                                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-vibrant-pink to-iridescent-purple dark:from-neon-green dark:to-bright-blue bg-clip-text text-transparent mb-3">
+                                <div className="text-4xl md:text-5xl font-bold gradient-text-accent mb-3">
                                     24h
                                 </div>
-                                <div className="text-slate-gray dark:text-soft-gray font-medium">Average Response</div>
+                                <div className="text-text-secondary font-medium">Average Response</div>
                             </div>
                             <div className="text-center group hover-float" style={{ animationDelay: '0.3s' }}>
-                                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-iridescent-purple to-bright-blue dark:from-vibrant-pink dark:to-neon-green bg-clip-text text-transparent mb-3">
+                                <div className="text-4xl md:text-5xl font-bold gradient-text-accent mb-3">
                                     3,420
                                 </div>
-                                <div className="text-slate-gray dark:text-soft-gray font-medium">Active Citizens</div>
+                                <div className="text-text-secondary font-medium">Active Citizens</div>
                             </div>
                         </div>
                     </div>
@@ -219,21 +229,21 @@ export default function ReportPage() {
             {/* CTA Section */}
             <section className="relative py-20">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <div className="glass-surface rounded-3xl p-12 border border-glass-light-hover dark:border-glass-dark-hover">
-                        <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-bright-blue via-vibrant-pink to-bright-blue dark:from-neon-green dark:via-iridescent-purple dark:to-neon-green bg-clip-text text-transparent mb-6">
+                    <div className="card-modern p-12">
+                        <h2 className="text-4xl md:text-5xl font-bold gradient-text-charcoal mb-6">
                             Ready to Make a Difference?
                         </h2>
-                        <p className="text-xl text-slate-gray dark:text-soft-gray mb-10 max-w-2xl mx-auto">
+                        <p className="text-xl text-text-secondary mb-10 max-w-2xl mx-auto">
                             Your report could be the catalyst for positive change in your community. Start reporting today and be part of the solution.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <button
                                 onClick={() => setIsFormVisible(true)}
-                                className="group bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white px-8 py-4 rounded-2xl text-lg font-semibold hover:shadow-neon dark:hover:shadow-purple transition-all duration-300 hover:scale-105"
+                                className="group btn-modern px-8 py-4 rounded-2xl text-lg font-semibold hover:scale-105"
                             >
                                 Report Your First Issue
                             </button>
-                            <button className="group glass-surface border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green px-8 py-4 rounded-2xl text-lg font-semibold hover:shadow-neon transition-all duration-300 hover:scale-105">
+                            <button className="group glass-surface border border-accent-primary text-accent-primary px-8 py-4 rounded-2xl text-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105">
                                 View Previous Reports
                             </button>
                         </div>

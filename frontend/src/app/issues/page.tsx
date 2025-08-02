@@ -3,19 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/header';
-
-interface Issue {
-    id: number;
-    title: string;
-    category: string;
-    status: 'open' | 'in-progress' | 'resolved' | 'closed';
-    priority: 'low' | 'medium' | 'high' | 'urgent';
-    location: string;
-    reportedBy: string;
-    reportedDate: string;
-    description: string;
-    upvotes: number;
-}
+import { apiClient, isApiSuccess } from '@/lib/api-client';
+import { Issue, IssueFilters, PaginatedResponse } from '@/types/database';
 
 export default function IssuesPage() {
     const [issues, setIssues] = useState<Issue[]>([]);
@@ -23,131 +12,109 @@ export default function IssuesPage() {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]);
 
-    // Mock data - replace with actual API call
+    // Fetch categories on component mount
     useEffect(() => {
-        const mockIssues: Issue[] = [
-            {
-                id: 1,
-                title: "Large pothole on Main Street",
-                category: "Roads",
-                status: "open",
-                priority: "high",
-                location: "Main Street, Downtown",
-                reportedBy: "John Doe",
-                reportedDate: "2025-01-28",
-                description: "Large pothole causing traffic issues and potential damage to vehicles",
-                upvotes: 45
-            },
-            {
-                id: 2,
-                title: "Broken streetlight on Oak Avenue",
-                category: "Lighting",
-                status: "in-progress",
-                priority: "medium",
-                location: "Oak Avenue, Residential Area",
-                reportedBy: "Jane Smith",
-                reportedDate: "2025-01-25",
-                description: "Streetlight has been flickering and now completely out",
-                upvotes: 23
-            },
-            {
-                id: 3,
-                title: "Water leak at Central Park",
-                category: "Water Supply",
-                status: "resolved",
-                priority: "urgent",
-                location: "Central Park, City Center",
-                reportedBy: "Mike Johnson",
-                reportedDate: "2025-01-20",
-                description: "Major water leak flooding the park pathway",
-                upvotes: 67
-            },
-            {
-                id: 4,
-                title: "Overflowing trash bin at Bus Stop 12",
-                category: "Cleanliness",
-                status: "open",
-                priority: "low",
-                location: "Bus Stop 12, Market District",
-                reportedBy: "Sarah Wilson",
-                reportedDate: "2025-01-30",
-                description: "Trash bin overflowing, attracting pests and creating unsanitary conditions",
-                upvotes: 12
-            },
-            {
-                id: 5,
-                title: "Damaged fence around playground",
-                category: "Public Safety",
-                status: "in-progress",
-                priority: "high",
-                location: "Sunset Elementary School",
-                reportedBy: "David Brown",
-                reportedDate: "2025-01-22",
-                description: "Playground fence has several broken sections posing safety risk to children",
-                upvotes: 89
+        const fetchCategories = async () => {
+            try {
+                const response = await apiClient.getCategories();
+                if (isApiSuccess(response)) {
+                    setCategories(response.data);
+                }
+            } catch (err) {
+                console.error('Failed to fetch categories:', err);
             }
-        ];
+        };
 
-        setIssues(mockIssues);
-        setFilteredIssues(mockIssues);
+        fetchCategories();
     }, []);
 
-    // Filter issues based on category, status, and search query
+    // Fetch issues with filters
     useEffect(() => {
-        let filtered = issues;
+        const fetchIssues = async () => {
+            try {
+                setLoading(true);
+                setError(null);
 
-        if (selectedCategory !== 'all') {
-            filtered = filtered.filter(issue => issue.category === selectedCategory);
-        }
+                const filters: IssueFilters = {};
+                if (selectedCategory !== 'all') {
+                    filters.category_id = parseInt(selectedCategory);
+                }
+                if (selectedStatus !== 'all') {
+                    filters.status_id = parseInt(selectedStatus);
+                }
+                if (searchQuery.trim()) {
+                    filters.search_term = searchQuery.trim();
+                }
 
-        if (selectedStatus !== 'all') {
-            filtered = filtered.filter(issue => issue.status === selectedStatus);
-        }
+                const response = await apiClient.getIssues(filters, currentPage, 10);
+                
+                if (isApiSuccess(response)) {
+                    setIssues(response.data.data);
+                    setFilteredIssues(response.data.data);
+                    setTotalPages(response.data.totalPages);
+                } else {
+                    setError(response.error || 'Failed to load issues');
+                }
+            } catch (err) {
+                setError('Failed to load issues');
+                console.error('Error fetching issues:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        if (searchQuery) {
-            filtered = filtered.filter(issue =>
-                issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                issue.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                issue.location.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-        }
-
-        setFilteredIssues(filtered);
-    }, [issues, selectedCategory, selectedStatus, searchQuery]);
+        fetchIssues();
+    }, [selectedCategory, selectedStatus, searchQuery, currentPage]);
 
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'open':
-                return 'bg-vibrant-pink/10 text-vibrant-pink dark:bg-vibrant-pink/20 dark:text-vibrant-pink border-vibrant-pink/20';
+                return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
             case 'in-progress':
-                return 'bg-bright-blue/10 text-bright-blue dark:bg-bright-blue/20 dark:text-bright-blue border-bright-blue/20';
+                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
             case 'resolved':
-                return 'bg-neon-green/10 text-neon-green dark:bg-neon-green/20 dark:text-neon-green border-neon-green/20';
+                return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
             case 'closed':
-                return 'bg-slate-gray/10 text-slate-gray dark:bg-soft-gray/20 dark:text-soft-gray border-slate-gray/20';
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
             default:
-                return 'bg-slate-gray/10 text-slate-gray dark:bg-soft-gray/20 dark:text-soft-gray border-slate-gray/20';
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
         }
     };
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
             case 'urgent':
-                return 'bg-gradient-to-r from-vibrant-pink to-bright-blue text-white';
+                return 'bg-red-500 text-white';
             case 'high':
-                return 'bg-vibrant-pink/10 text-vibrant-pink dark:bg-vibrant-pink/20 dark:text-vibrant-pink border-vibrant-pink/20';
+                return 'bg-orange-500 text-white';
             case 'medium':
-                return 'bg-bright-blue/10 text-bright-blue dark:bg-bright-blue/20 dark:text-bright-blue border-bright-blue/20';
+                return 'bg-yellow-500 text-white';
             case 'low':
-                return 'bg-slate-gray/10 text-slate-gray dark:bg-soft-gray/20 dark:text-soft-gray border-slate-gray/20';
+                return 'bg-green-500 text-white';
             default:
-                return 'bg-slate-gray/10 text-slate-gray dark:bg-soft-gray/20 dark:text-soft-gray border-slate-gray/20';
+                return 'bg-gray-500 text-white';
         }
     };
 
-    const categories = ['all', 'Roads', 'Lighting', 'Water Supply', 'Cleanliness', 'Public Safety', 'Obstructions'];
-    const statuses = ['all', 'open', 'in-progress', 'resolved', 'closed'];
+    const handleUpvote = async (issueId: number) => {
+        try {
+            await apiClient.upvoteIssue(issueId);
+            // Refresh the issues list
+            window.location.reload();
+        } catch (err) {
+            console.error('Failed to upvote issue:', err);
+        }
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-cloud-white via-blue-50/50 to-purple-50/30 dark:from-midnight dark:via-purple-900/10 dark:to-blue-900/10">
@@ -159,56 +126,43 @@ export default function IssuesPage() {
                 <div className="absolute bottom-20 right-10 w-64 h-64 bg-gradient-to-r from-vibrant-pink/20 to-bright-blue/20 dark:from-iridescent-purple/20 dark:to-neon-green/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
             </div>
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Page Header */}
-                <div className="text-center mb-12 animate-slide-up">
-                    <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-charcoal to-slate-gray dark:from-white dark:to-soft-gray bg-clip-text text-transparent mb-6">
+            {/* Main Content */}
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-4xl md:text-5xl font-bold gradient-text-charcoal mb-4">
                         Community Issues
                     </h1>
-                    <p className="text-xl text-slate-gray dark:text-soft-gray max-w-3xl mx-auto mb-8">
-                        Track and engage with municipal issues reported by your community. Together, we can build a smarter, more responsive city.
+                    <p className="text-xl text-text-secondary">
+                        Track and monitor issues reported by your community
                     </p>
-                    <Link
-                        href="/report"
-                        className="inline-flex items-center gap-3 bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white px-8 py-4 rounded-2xl text-lg font-semibold hover:shadow-neon dark:hover:shadow-purple transition-all duration-300 hover:scale-105"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Report New Issue
-                    </Link>
                 </div>
 
                 {/* Filters */}
-                <div className="glass-surface rounded-2xl p-6 mb-8 border border-glass-light-hover dark:border-glass-dark-hover backdrop-blur-glass">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="card-modern p-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {/* Search */}
-                        <div>
-                            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
-                                Search Issues
-                            </label>
+                        <div className="md:col-span-2">
                             <input
                                 type="text"
-                                placeholder="Search by title, description, or location..."
+                                placeholder="Search issues..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                                className="input-modern w-full"
                             />
                         </div>
 
                         {/* Category Filter */}
                         <div>
-                            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
-                                Category
-                            </label>
                             <select
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
-                                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                                className="input-modern w-full"
                             >
+                                <option value="all">All Categories</option>
                                 {categories.map((category) => (
-                                    <option key={category} value={category}>
-                                        {category === 'all' ? 'All Categories' : category}
+                                    <option key={category.id} value={category.id}>
+                                        {category.name}
                                     </option>
                                 ))}
                             </select>
@@ -216,140 +170,154 @@ export default function IssuesPage() {
 
                         {/* Status Filter */}
                         <div>
-                            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
-                                Status
-                            </label>
                             <select
                                 value={selectedStatus}
                                 onChange={(e) => setSelectedStatus(e.target.value)}
-                                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                                className="input-modern w-full"
                             >
-                                {statuses.map((status) => (
-                                    <option key={status} value={status}>
-                                        {status === 'all' ? 'All Statuses' : status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
-                                    </option>
-                                ))}
+                                <option value="all">All Status</option>
+                                <option value="1">Open</option>
+                                <option value="2">In Progress</option>
+                                <option value="3">Resolved</option>
+                                <option value="4">Closed</option>
                             </select>
-                        </div>
-
-                        {/* Results Count */}
-                        <div className="flex items-end">
-                            <div className="glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 w-full text-center">
-                                <div className="text-2xl font-bold bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple bg-clip-text text-transparent">
-                                    {filteredIssues.length}
-                                </div>
-                                <div className="text-sm text-slate-gray dark:text-soft-gray">
-                                    Issues Found
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Issues List */}
-                <div className="space-y-6">
-                    {filteredIssues.length > 0 ? (
-                        filteredIssues.map((issue, index) => (
-                            <div
-                                key={issue.id}
-                                className="glass-surface rounded-2xl p-6 border border-glass-light-hover dark:border-glass-dark-hover hover:border-bright-blue dark:hover:border-neon-green transition-all duration-300 hover:-translate-y-1 hover:shadow-glass-light dark:hover:shadow-glass-dark animate-slide-up group"
-                                style={{ animationDelay: `${index * 0.1}s` }}
-                            >
-                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                {loading ? (
+                    <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-primary mx-auto mb-4"></div>
+                        <p className="text-text-secondary">Loading issues...</p>
+                    </div>
+                ) : error ? (
+                    <div className="text-center py-12">
+                        <p className="text-red-500 dark:text-red-400 mb-4">{error}</p>
+                        <button 
+                            onClick={() => window.location.reload()} 
+                            className="glass-surface border border-accent-primary text-accent-primary px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        {filteredIssues.map((issue) => (
+                            <div key={issue.id} className="card-modern p-6 hover:border-accent-primary transition-all duration-300">
+                                <div className="flex justify-between items-start mb-4">
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <h3 className="text-xl font-bold text-charcoal dark:text-white group-hover:text-bright-blue dark:group-hover:text-neon-green transition-colors">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <h3 className="text-xl font-bold text-text-primary">
                                                 {issue.title}
                                             </h3>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(issue.priority)}`}>
-                                                {issue.priority.toUpperCase()}
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(issue.status?.name || 'open')}`}>
+                                                {issue.status?.name || 'Open'}
+                                            </span>
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor('medium')}`}>
+                                                Medium
                                             </span>
                                         </div>
-                                        <p className="text-slate-gray dark:text-soft-gray mb-4 line-clamp-2">
+                                        <p className="text-text-secondary mb-3">
                                             {issue.description}
                                         </p>
-                                        <div className="flex flex-wrap items-center gap-4 text-sm">
-                                            <span className="flex items-center gap-1 text-slate-gray dark:text-soft-gray">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                </svg>
-                                                {issue.location}
-                                            </span>
-                                            <span className="flex items-center gap-1 text-slate-gray dark:text-soft-gray">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                                {new Date(issue.reportedDate).toLocaleDateString()}
-                                            </span>
-                                            <span className="flex items-center gap-1 text-slate-gray dark:text-soft-gray">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
-                                                {issue.reportedBy}
-                                            </span>
+                                        <div className="flex items-center gap-4 text-sm text-text-secondary">
+                                            <span>📍 {issue.address || 'Location not specified'}</span>
+                                            <span>📅 {new Date(issue.created_at).toLocaleDateString()}</span>
+                                            <span>👤 {issue.reporter?.user_name || 'Anonymous'}</span>
                                         </div>
                                     </div>
-
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-center">
-                                            <div className="glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl p-3">
-                                                <div className="text-lg font-bold text-bright-blue dark:text-neon-green">
-                                                    {issue.upvotes}
-                                                </div>
-                                                <div className="text-xs text-slate-gray dark:text-soft-gray">
-                                                    Upvotes
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col gap-2">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(issue.status)}`}>
-                                                {issue.status.replace('-', ' ').toUpperCase()}
-                                            </span>
-                                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-gray/10 text-slate-gray dark:bg-soft-gray/20 dark:text-soft-gray border border-slate-gray/20">
-                                                {issue.category}
-                                            </span>
-                                        </div>
-
-                                        <Link
-                                            href={`/issues/${issue.id}`}
-                                            className="glass-surface border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green px-6 py-3 rounded-xl font-semibold hover:shadow-neon transition-all duration-300 hover:scale-105"
+                                    <div className="flex flex-col items-center gap-2">
+                                        <button
+                                            onClick={() => handleUpvote(issue.id)}
+                                            className="flex flex-col items-center p-2 rounded-lg hover:bg-glass-bg transition-colors"
                                         >
-                                            View Details
-                                        </Link>
+                                            <svg className="w-6 h-6 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                            </svg>
+                                            <span className="text-sm text-text-secondary">0</span>
+                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="text-center py-16">
-                            <div className="glass-surface rounded-2xl p-12 border border-glass-light-hover dark:border-glass-dark-hover">
-                                <div className="w-16 h-16 bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.034 0-3.9.785-5.291 2.09M6.343 6.343L17.657 17.657" />
-                                    </svg>
+                                
+                                {issue.photos && issue.photos.length > 0 && (
+                                    <div className="flex gap-2 mb-4">
+                                        {issue.photos.slice(0, 3).map((photo, index) => (
+                                            <div key={index} className="w-20 h-20 rounded-lg overflow-hidden">
+                                                <img
+                                                    src={photo.photo_url}
+                                                    alt={`Issue photo ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-sm text-text-secondary">
+                                            Category: {issue.category?.name || 'Unknown'}
+                                        </span>
+                                        {issue.resolved_at && (
+                                            <span className="text-sm text-green-600 dark:text-green-400">
+                                                Resolved: {new Date(issue.resolved_at).toLocaleDateString()}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <Link
+                                        href={`/issues/${issue.id}`}
+                                        className="text-accent-primary hover:text-accent-secondary font-medium transition-colors"
+                                    >
+                                        View Details →
+                                    </Link>
                                 </div>
-                                <h3 className="text-2xl font-bold text-charcoal dark:text-white mb-4">
-                                    No Issues Found
-                                </h3>
-                                <p className="text-slate-gray dark:text-soft-gray mb-6">
-                                    No issues match your current search criteria. Try adjusting your filters or search terms.
-                                </p>
-                                <button
-                                    onClick={() => {
-                                        setSearchQuery('');
-                                        setSelectedCategory('all');
-                                        setSelectedStatus('all');
-                                    }}
-                                    className="glass-surface border border-bright-blue dark:border-neon-green text-bright-blue dark:text-neon-green px-6 py-3 rounded-xl font-semibold hover:shadow-neon transition-all duration-300 hover:scale-105"
-                                >
-                                    Clear Filters
-                                </button>
                             </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center mt-8">
+                        <div className="flex gap-2">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                <button
+                                    key={page}
+                                    onClick={() => handlePageChange(page)}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                                        currentPage === page
+                                            ? 'bg-accent-primary text-white'
+                                            : 'glass-surface border border-glass-border text-text-primary hover:border-accent-primary'
+                                    }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
+
+                {/* Empty State */}
+                {!loading && !error && filteredIssues.length === 0 && (
+                    <div className="text-center py-12">
+                        <div className="w-24 h-24 bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-2xl font-bold text-text-primary mb-2">No Issues Found</h3>
+                        <p className="text-text-secondary mb-6">
+                            No issues match your current filters. Try adjusting your search criteria.
+                        </p>
+                        <Link
+                            href="/report"
+                            className="btn-modern px-8 py-3 rounded-xl font-semibold hover:scale-105"
+                        >
+                            Report New Issue
+                        </Link>
+                    </div>
+                )}
             </div>
         </div>
     );

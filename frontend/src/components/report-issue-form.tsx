@@ -1,67 +1,72 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Camera, MapPin, X, Send } from 'lucide-react';
 import Image from 'next/image';
-
-interface IssueForm {
-  title: string;
-  description: string;
-  category: 'roads' | 'lighting' | 'water-supply' | 'cleanliness' | 'public-safety' | 'obstructions';
-  priority: 'low' | 'medium' | 'high';
-  location: {
-    lat: number;
-    lng: number;
-    address: string;
-  };
-  images: File[]; // Up to 3 images
-  reporterName: string;
-  reporterContact: string;
-  isAnonymous: boolean;
-}
+import { CreateIssueForm, Category } from '../types/database';
+import { apiClient, isApiSuccess, formatApiError } from '../lib/api-client';
 
 interface ReportIssueFormProps {
-  onSubmit: (issue: IssueForm) => void;
+  onSubmit: (issue: CreateIssueForm) => void;
   onCancel: () => void;
 }
 
 export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormProps) {
-  const [form, setForm] = useState<IssueForm>({
+  const [form, setForm] = useState<CreateIssueForm>({
     title: '',
     description: '',
-    category: 'roads',
-    priority: 'medium',
-    location: {
-      lat: 0,
-      lng: 0,
-      address: '',
-    },
-    images: [],
-    reporterName: '',
-    reporterContact: '',
-    isAnonymous: false,
+    category_id: 1,
+    latitude: 0,
+    longitude: 0,
+    address: '',
+    location_description: '',
+    is_anonymous: false,
+    photos: [],
   });
 
+  const [categories, setCategories] = useState<Category[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleInputChange = (field: keyof IssueForm, value: string | File | undefined | boolean | File[]) => {
+  // Fetch categories on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await apiClient.getCategories();
+        if (isApiSuccess(response) && response.data.length > 0) {
+          setCategories(response.data);
+          setForm(prev => ({ ...prev, category_id: response.data[0].id }));
+        } else {
+          // Fallback categories
+          const fallbackCategories: Category[] = [
+            { id: 1, name: "Roads", description: "Road issues", is_active: true, created_at: new Date() },
+            { id: 2, name: "Lighting", description: "Lighting issues", is_active: true, created_at: new Date() },
+            { id: 3, name: "Water Supply", description: "Water issues", is_active: true, created_at: new Date() },
+            { id: 4, name: "Cleanliness", description: "Cleanliness issues", is_active: true, created_at: new Date() },
+            { id: 5, name: "Public Safety", description: "Safety issues", is_active: true, created_at: new Date() },
+            { id: 6, name: "Obstructions", description: "Obstruction issues", is_active: true, created_at: new Date() },
+          ];
+          setCategories(fallbackCategories);
+        }
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleInputChange = (field: keyof CreateIssueForm, value: string | number | boolean | File[]) => {
     setForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleLocationChange = (field: keyof IssueForm['location'], value: string | number) => {
-    setForm(prev => ({
-      ...prev,
-      location: { ...prev.location, [field]: value }
-    }));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0 && form.images.length + files.length <= 3) {
-      const newImages = [...form.images, ...files];
-      setForm(prev => ({ ...prev, images: newImages }));
+    if (files.length > 0 && (form.photos?.length || 0) + files.length <= 3) {
+      const newImages = [...(form.photos || []), ...files];
+      setForm(prev => ({ ...prev, photos: newImages }));
 
       // Generate previews for new images
       files.forEach(file => {
@@ -71,15 +76,15 @@ export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormP
         };
         reader.readAsDataURL(file);
       });
-    } else if (form.images.length + files.length > 3) {
+    } else if ((form.photos?.length || 0) + files.length > 3) {
       alert('You can upload maximum 3 images');
     }
   };
 
   const removeImage = (index: number) => {
-    const newImages = form.images.filter((_, i) => i !== index);
+    const newImages = (form.photos || []).filter((_, i) => i !== index);
     const newPreviews = imagePreviews.filter((_, i) => i !== index);
-    setForm(prev => ({ ...prev, images: newImages }));
+    setForm(prev => ({ ...prev, photos: newImages }));
     setImagePreviews(newPreviews);
   };
 
@@ -91,12 +96,9 @@ export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormP
           const { latitude, longitude } = position.coords;
           setForm(prev => ({
             ...prev,
-            location: {
-              ...prev.location,
-              lat: latitude,
-              lng: longitude,
-              address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
-            }
+            latitude,
+            longitude,
+            address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
           }));
           setLocationLoading(false);
         },
@@ -115,16 +117,17 @@ export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     // Validate form
     if (!form.title.trim() || !form.description.trim()) {
-      alert('Please fill in title and description.');
+      setError('Please fill in title and description.');
       setIsSubmitting(false);
       return;
     }
 
-    if (!form.isAnonymous && !form.reporterName.trim()) {
-      alert('Please provide your name or choose to report anonymously.');
+    if (form.latitude === 0 || form.longitude === 0) {
+      setError('Please provide a valid location.');
       setIsSubmitting(false);
       return;
     }
@@ -135,18 +138,18 @@ export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormP
       setForm({
         title: '',
         description: '',
-        category: 'roads',
-        priority: 'medium',
-        location: { lat: 0, lng: 0, address: '' },
-        images: [],
-        reporterName: '',
-        reporterContact: '',
-        isAnonymous: false,
+        category_id: categories[0]?.id || 1,
+        latitude: 0,
+        longitude: 0,
+        address: '',
+        location_description: '',
+        is_anonymous: false,
+        photos: [],
       });
       setImagePreviews([]);
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Failed to submit issue. Please try again.');
+      setError('Failed to submit issue. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -161,24 +164,28 @@ export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormP
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="glass-surface rounded-2xl p-8 border border-glass-light-hover dark:border-glass-dark-hover backdrop-blur-glass">
+        <div className="card-modern p-8 animate-slide-up">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-charcoal to-slate-gray dark:from-white dark:to-soft-gray bg-clip-text text-transparent mb-2">Report an Issue</h2>
-              <p className="text-slate-gray dark:text-soft-gray">Help improve your community by reporting municipal issues</p>
+              <h1 className="text-3xl font-bold gradient-text-charcoal mb-2">
+                Report an Issue
+              </h1>
+              <p className="text-text-secondary">
+                Help make your community better by reporting civic issues
+              </p>
             </div>
             <button
               onClick={onCancel}
-              className="p-3 text-slate-gray dark:text-soft-gray hover:text-bright-blue dark:hover:text-neon-green glass-surface rounded-xl border border-glass-light-hover dark:border-glass-dark-hover hover:shadow-neon transition-all duration-300"
+              className="p-3 text-text-secondary hover:text-accent-primary glass-surface rounded-xl border border-glass-border hover:shadow-lg transition-all duration-300"
             >
               <X className="h-6 w-6" />
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Issue Title */}
+            {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-charcoal dark:text-white text-sm font-medium mb-3">
+              <label htmlFor="title" className="block text-text-primary text-sm font-medium mb-2">
                 Issue Title *
               </label>
               <input
@@ -188,51 +195,32 @@ export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormP
                 value={form.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder="Brief description of the issue"
-                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                className="input-modern w-full"
               />
             </div>
 
-            {/* Issue Type and Priority */}
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="category" className="block text-charcoal dark:text-white text-sm font-medium mb-3">
-                  Issue Category
-                </label>
-                <select
-                  id="category"
-                  value={form.category}
-                  onChange={(e) => handleInputChange('category', e.target.value)}
-                  className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
-                >
-                  <option value="roads">🛣️ Smart Roads</option>
-                  <option value="lighting">💡 IoT Lighting</option>
-                  <option value="water-supply">💧 Water Systems</option>
-                  <option value="cleanliness">🧹 Clean Tech</option>
-                  <option value="public-safety">🚨 Public Safety</option>
-                  <option value="obstructions">🚧 Obstructions</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="priority" className="block text-charcoal dark:text-white text-sm font-medium mb-3">
-                  Priority Level
-                </label>
-                <select
-                  id="priority"
-                  value={form.priority}
-                  onChange={(e) => handleInputChange('priority', e.target.value)}
-                  className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
-                >
-                  <option value="low">🟢 Low Priority</option>
-                  <option value="medium">🟡 Medium Priority</option>
-                  <option value="high">🔴 High Priority</option>
-                </select>
-              </div>
+            {/* Category */}
+            <div>
+              <label htmlFor="category_id" className="block text-text-primary text-sm font-medium mb-2">
+                Category *
+              </label>
+              <select
+                id="category_id"
+                value={form.category_id}
+                onChange={(e) => handleInputChange('category_id', parseInt(e.target.value))}
+                className="input-modern w-full"
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-charcoal dark:text-white text-sm font-medium mb-3">
+              <label htmlFor="description" className="block text-text-primary text-sm font-medium mb-2">
                 Description *
               </label>
               <textarea
@@ -241,209 +229,162 @@ export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormP
                 rows={4}
                 value={form.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Detailed description of the issue..."
-                className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300 resize-none"
+                placeholder="Provide detailed information about the issue..."
+                className="input-modern w-full resize-none"
               />
             </div>
 
-            {/* Location */}
+            {/* Location Information */}
             <div>
-              <label className="block text-charcoal dark:text-white text-sm font-medium mb-3">
-                Location
+              <label className="block text-text-primary text-sm font-medium mb-2">
+                Location *
               </label>
               <div className="space-y-4">
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <input
                     type="text"
-                    value={form.location.address}
-                    onChange={(e) => handleLocationChange('address', e.target.value)}
-                    placeholder="Enter address or coordinates"
-                    className="flex-1 glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                    placeholder="Enter address or location"
+                    value={form.address || ''}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    className="flex-1 input-modern"
                   />
                   <button
                     type="button"
                     onClick={getCurrentLocation}
                     disabled={locationLoading}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white rounded-xl hover:shadow-neon dark:hover:shadow-purple transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-3 bg-accent-primary text-white rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50"
                   >
-                    <MapPin className="h-4 w-4" />
-                    {locationLoading ? 'Getting...' : 'Current'}
+                    {locationLoading ? '📍' : <MapPin className="h-5 w-5" />}
                   </button>
                 </div>
-
+                
                 <div className="grid grid-cols-2 gap-4">
                   <input
                     type="number"
-                    step="any"
-                    value={form.location.lat || ''}
-                    onChange={(e) => handleLocationChange('lat', parseFloat(e.target.value) || 0)}
                     placeholder="Latitude"
-                    className="glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                    step="any"
+                    value={form.latitude || ''}
+                    onChange={(e) => handleInputChange('latitude', parseFloat(e.target.value) || 0)}
+                    className="input-modern"
                   />
                   <input
                     type="number"
-                    step="any"
-                    value={form.location.lng || ''}
-                    onChange={(e) => handleLocationChange('lng', parseFloat(e.target.value) || 0)}
                     placeholder="Longitude"
-                    className="glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
+                    step="any"
+                    value={form.longitude || ''}
+                    onChange={(e) => handleInputChange('longitude', parseFloat(e.target.value) || 0)}
+                    className="input-modern"
                   />
                 </div>
+
+                <input
+                  type="text"
+                  placeholder="Additional location details (optional)"
+                  value={form.location_description || ''}
+                  onChange={(e) => handleInputChange('location_description', e.target.value)}
+                  className="w-full input-modern"
+                />
               </div>
             </div>
 
-            {/* Image Upload */}
+            {/* Photo Upload */}
             <div>
-              <label className="block text-charcoal dark:text-white text-sm font-medium mb-3">
-                Photos (Up to 3) - Optional
+              <label className="block text-text-primary text-sm font-medium mb-2">
+                Photos (up to 3)
               </label>
-
-              {imagePreviews.length > 0 ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-4">
+                {imagePreviews.length > 0 && (
+                  <div className="grid grid-cols-3 gap-4">
                     {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
+                      <div key={index} className="relative">
                         <Image
                           src={preview}
                           alt={`Preview ${index + 1}`}
-                          width={150}
+                          width={120}
                           height={120}
-                          className="w-full h-24 object-cover rounded-xl border border-glass-light-hover dark:border-glass-dark-hover"
+                          className="w-full h-24 object-cover rounded-xl"
                         />
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 p-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full hover:shadow-neon transition-all duration-300 opacity-0 group-hover:opacity-100"
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
                         >
-                          <X className="h-3 w-3" />
+                          ×
                         </button>
                       </div>
                     ))}
                   </div>
+                )}
 
-                  {form.images.length < 3 && (
-                    <div className="glass-surface border-2 border-dashed border-bright-blue dark:border-neon-green rounded-xl p-6 text-center hover:shadow-neon transition-all duration-300">
-                      <label htmlFor="additionalImages" className="cursor-pointer">
-                        <span className="text-bright-blue dark:text-neon-green hover:text-vibrant-pink dark:hover:text-iridescent-purple font-medium">
-                          Add more photos ({3 - form.images.length} remaining)
-                        </span>
-                      </label>
-                      <input
-                        type="file"
-                        id="additionalImages"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="glass-surface border-2 border-dashed border-bright-blue dark:border-neon-green rounded-xl p-8 text-center hover:shadow-neon transition-all duration-300">
-                  <Camera className="mx-auto h-12 w-12 text-bright-blue dark:text-neon-green mb-4 opacity-70" />
-                  <label htmlFor="images" className="cursor-pointer">
-                    <span className="block text-bright-blue dark:text-neon-green hover:text-vibrant-pink dark:hover:text-iridescent-purple font-medium mb-2">
-                      Upload photos
+                {(form.photos?.length || 0) < 3 && (
+                  <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-glass-border rounded-xl cursor-pointer hover:border-accent-primary transition-all duration-300">
+                    <Camera className="h-8 w-8 text-text-secondary mb-2" />
+                    <span className="text-sm text-text-secondary">
+                      Add photos ({3 - (form.photos?.length || 0)} remaining)
                     </span>
-                    <span className="text-slate-gray dark:text-soft-gray text-sm">PNG, JPG, GIF up to 10MB each</span>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
                   </label>
-                  <input
-                    type="file"
-                    id="images"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB each (max 3 photos)</p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
-            {/* Anonymous Reporting Toggle */}
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
-                id="isAnonymous"
-                checked={form.isAnonymous}
-                onChange={(e) => handleInputChange('isAnonymous', e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isAnonymous" className="text-sm font-medium text-gray-700">
-                Report anonymously
-              </label>
-              <span className="text-xs text-gray-500 ml-auto">
-                Your identity will not be shared
-              </span>
-            </div>
-
-            {/* Anonymous Reporting Toggle */}
-            <div className="glass-surface rounded-xl p-6 border border-glass-light-hover dark:border-glass-dark-hover">
-              <label className="flex items-center space-x-3 cursor-pointer">
+            {/* Anonymous Reporting */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
-                  checked={form.isAnonymous}
-                  onChange={(e) => handleInputChange('isAnonymous', e.target.checked)}
-                  className="w-5 h-5 text-bright-blue dark:text-neon-green bg-glass-light dark:bg-glass-dark border-glass-light-hover dark:border-glass-dark-hover rounded focus:ring-bright-blue dark:focus:ring-neon-green focus:ring-2"
+                  id="is_anonymous"
+                  checked={form.is_anonymous}
+                  onChange={(e) => handleInputChange('is_anonymous', e.target.checked)}
+                  className="w-4 h-4 text-accent-primary bg-glass-bg border-glass-border rounded focus:ring-accent-primary focus:ring-2"
                 />
-                <div>
-                  <span className="text-charcoal dark:text-white font-medium">Report Anonymously</span>
-                  <p className="text-sm text-slate-gray dark:text-soft-gray">Your identity will be kept private</p>
-                </div>
-              </label>
+                <label htmlFor="is_anonymous" className="text-text-primary text-sm font-medium">
+                  Report anonymously
+                </label>
+              </div>
+              <p className="text-xs text-text-secondary">
+                When reporting anonymously, your personal information will not be shared publicly, but authorities may still contact you for clarification.
+              </p>
             </div>
 
-            {/* Reporter Information */}
-            {!form.isAnonymous && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="reporterName" className="block text-charcoal dark:text-white text-sm font-medium mb-3">
-                    Your Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="reporterName"
-                    required={!form.isAnonymous}
-                    value={form.reporterName}
-                    onChange={(e) => handleInputChange('reporterName', e.target.value)}
-                    placeholder="Full name"
-                    className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="reporterContact" className="block text-charcoal dark:text-white text-sm font-medium mb-3">
-                    Contact Info
-                  </label>
-                  <input
-                    type="text"
-                    id="reporterContact"
-                    value={form.reporterContact}
-                    onChange={(e) => handleInputChange('reporterContact', e.target.value)}
-                    placeholder="Phone or email"
-                    className="w-full glass-surface border border-glass-light-hover dark:border-glass-dark-hover rounded-xl px-4 py-3 text-charcoal dark:text-white placeholder-slate-gray dark:placeholder-soft-gray focus:outline-none focus:border-bright-blue dark:focus:border-neon-green focus:ring-2 focus:ring-bright-blue/20 dark:focus:ring-neon-green/20 transition-all duration-300"
-                  />
-                </div>
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                {error}
               </div>
             )}
 
             {/* Submit Buttons */}
-            <div className="flex gap-4 pt-6 border-t border-glass-light-hover dark:border-glass-dark-hover">
+            <div className="flex gap-4 pt-6">
               <button
                 type="button"
                 onClick={onCancel}
-                className="flex-1 glass-surface border border-glass-light-hover dark:border-glass-dark-hover text-charcoal dark:text-white px-6 py-3 rounded-xl hover:shadow-neon transition-all duration-300 font-medium"
+                className="flex-1 glass-surface border border-glass-border text-text-primary py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 flex items-center justify-center gap-3 px-6 py-3 bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white rounded-xl hover:shadow-neon dark:hover:shadow-purple transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="flex-1 btn-modern py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <Send className="h-5 w-5" />
-                {isSubmitting ? 'Submitting...' : 'Submit Issue'}
+                {isSubmitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-5 w-5" />
+                    Submit Issue
+                  </>
+                )}
               </button>
             </div>
           </form>
