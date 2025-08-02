@@ -1,0 +1,8 @@
+<!-- Placeholder for water pipe burst -->
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#e3f2fd"/>
+  <rect x="50" y="100" width="300" height="100" fill="#1976d2" rx="10"/>
+  <circle cx="200" cy="150" r="30" fill="#0d47a1"/>
+  <text x="200" y="250" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">Water Pipe Issue</text>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial" font-size="12" fill="#666">Placeholder Image</text>
+</svg>
