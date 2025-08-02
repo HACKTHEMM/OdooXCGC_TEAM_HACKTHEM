@@ -11,7 +11,9 @@ export default function ReportPage() {
 
     const handleSubmitIssue = async (issueData: CreateIssueForm) => {
         try {
+            console.log('Submitting issue data:', issueData);
             const response = await apiClient.createIssue(issueData);
+            console.log('API response:', response);
 
             if (isApiSuccess(response)) {
                 // Show success message
@@ -21,11 +23,15 @@ export default function ReportPage() {
                 // Optionally redirect to the new issue page
                 // window.location.href = `/issues/${response.data.id}`;
             } else {
+                console.error('API error response:', response);
                 throw new Error(response.error || 'Failed to submit issue');
             }
         } catch (error) {
             console.error('Failed to submit issue:', error);
-            alert(formatApiError(error instanceof Error ? error.message : 'Failed to submit issue'));
+            const errorMessage = formatApiError(error instanceof Error ? error.message : 'Failed to submit issue');
+            console.error('Formatted error:', errorMessage);
+            alert(errorMessage);
+            throw error; // Re-throw so the form can handle it
         }
     };
 

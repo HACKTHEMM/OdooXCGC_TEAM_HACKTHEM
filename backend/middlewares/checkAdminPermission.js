@@ -8,7 +8,7 @@ const checkAdminPermission = (requiredLevel = 'moderator') => {
             const userId = req.user.id;
 
             const result = await query(`
-                SELECT id, role as admin_level, is_active
+                SELECT id, admin_level, is_active
                 FROM admin_users 
                 WHERE user_id = $1 AND is_active = true
             `, [userId]);

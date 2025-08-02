@@ -26,7 +26,8 @@ export const getAllUsers = async (req, res) => {
         `);
 
         res.json({
-            users: result.rows,
+            success: true,
+            data: result.rows,
             pagination: {
                 page: Number(page),
                 limit: Number(limit),
@@ -35,7 +36,10 @@ export const getAllUsers = async (req, res) => {
         });
     } catch (err) {
         console.error('Get all users error:', err);
-        res.status(500).json({ error: 'Failed to fetch users' });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch users'
+        });
     }
 };
 
@@ -82,10 +86,16 @@ export const getCategories = async (req, res) => {
             ORDER BY name ASC
         `);
 
-        res.json({ categories: result.rows });
+        res.json({
+            success: true,
+            data: result.rows
+        });
     } catch (err) {
         console.error('Get categories error:', err);
-        res.status(500).json({ error: 'Failed to fetch categories' });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch categories'
+        });
     }
 };
 
@@ -210,10 +220,16 @@ export const getFlaggedIssues = async (req, res) => {
             LIMIT $1 OFFSET $2
         `, [limit, offset]);
 
-        res.json({ flaggedIssues: result.rows });
+        res.json({
+            success: true,
+            data: result.rows
+        });
     } catch (err) {
         console.error('Get flagged issues error:', err);
-        res.status(500).json({ error: 'Failed to fetch flagged issues' });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch flagged issues'
+        });
     }
 };
 

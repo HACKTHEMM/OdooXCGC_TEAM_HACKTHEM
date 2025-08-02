@@ -42,7 +42,7 @@ export default function AdminPage() {
       }
 
       if (usersRes.success && usersRes.data) {
-        setUsers(usersRes.data);
+        setUsers(Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data as any).data || []);
       }
 
       if (issuesRes.success && issuesRes.data) {
@@ -132,7 +132,7 @@ export default function AdminPage() {
       <div className="flex">
         {/* Sidebar */}
         <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        
+
         {/* Content Area */}
         <div className="flex-1 p-6">
           {renderContent()}

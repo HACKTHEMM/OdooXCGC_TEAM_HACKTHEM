@@ -1,10 +1,51 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { clearAuthData, getAuthData } from '../lib/auth-utils';
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [user, setUser] = useState<{ user_name?: string; email?: string } | null>(null);
+
+    useEffect(() => {
+        // Check authentication status
+        const checkAuth = () => {
+            const { user, isAuthenticated } = getAuthData();
+            setUser(user);
+            setIsAuthenticated(isAuthenticated);
+        };
+
+        checkAuth();
+
+        // Listen for storage changes (e.g., when user logs in/out in another tab)
+        const handleStorageChange = () => {
+            checkAuth();
+        };
+
+        // Listen for custom auth state changes (e.g., when user logs in/out in same tab)
+        const handleAuthChange = () => {
+            checkAuth();
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('authStateChanged', handleAuthChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('authStateChanged', handleAuthChange);
+        };
+    }, []);
+
+    const handleLogout = () => {
+        if (typeof window !== 'undefined') {
+            clearAuthData();
+            setIsAuthenticated(false);
+            setUser(null);
+            window.location.href = '/';
+        }
+    };
 
     return (
         <header className="glass-surface border-b border-glass-border backdrop-blur-[20px] sticky top-0 z-50">
@@ -56,12 +97,26 @@ export default function Header() {
                                 Admin
                             </Link>
 
-                            <Link
-                                href="/login"
-                                className="btn-modern px-6 py-2 text-sm"
-                            >
-                                Login
-                            </Link>
+                            {isAuthenticated ? (
+                                <div className="flex items-center space-x-4">
+                                    <span className="text-pure-white text-sm">
+                                        Welcome, {user?.user_name || user?.email}
+                                    </span>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="btn-modern px-6 py-2 text-sm"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    className="btn-modern px-6 py-2 text-sm"
+                                >
+                                    Login
+                                </Link>
+                            )}
                         </div>
                     </div>
 
@@ -121,13 +176,31 @@ export default function Header() {
                             >
                                 Admin
                             </Link>
-                            <Link
-                                href="/login"
-                                className="text-neon-green hover:text-cyber-blue block px-3 py-2 rounded-md text-base font-medium transition-colors duration-300"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                Login
-                            </Link>
+
+                            {isAuthenticated ? (
+                                <div className="border-t border-glass-border pt-2">
+                                    <div className="px-3 py-2 text-pure-white text-sm">
+                                        Welcome, {user?.user_name || user?.email}
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            handleLogout();
+                                            setIsMenuOpen(false);
+                                        }}
+                                        className="text-neon-green hover:text-cyber-blue block px-3 py-2 rounded-md text-base font-medium transition-colors duration-300 w-full text-left"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    className="text-neon-green hover:text-cyber-blue block px-3 py-2 rounded-md text-base font-medium transition-colors duration-300"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    Login
+                                </Link>
+                            )}
                         </div>
                     </div>
                 )}

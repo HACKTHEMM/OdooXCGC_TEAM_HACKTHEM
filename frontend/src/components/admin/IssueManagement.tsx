@@ -38,8 +38,8 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
   const filteredIssues = issues.filter(issue => {
     const matchesSearch = issue.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       issue.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || issue.status?.name === filterStatus;
-    const matchesCategory = filterCategory === 'all' || issue.category?.name === filterCategory;
+    const matchesStatus = filterStatus === 'all' || (issue as any).status_name === filterStatus;
+    const matchesCategory = filterCategory === 'all' || (issue as any).category_name === filterCategory;
     const matchesFlagged = filterFlagged === 'all' ||
       (filterFlagged === 'flagged' && issue.flag_count > 0) ||
       (filterFlagged === 'not-flagged' && issue.flag_count === 0);
@@ -135,7 +135,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
     }
   };
 
-  const categories = Array.from(new Set(issues.map(issue => issue.category?.name).filter(Boolean)));
+  const categories = Array.from(new Set(issues.map(issue => (issue as any).category_name).filter(Boolean)));
 
   return (
     <div className="space-y-8">
@@ -172,7 +172,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
             </div>
             <div>
               <h3 className="text-2xl font-bold gradient-text-accent">
-                {issues.filter(i => i.status?.name === 'open').length}
+                {issues.filter(i => (i as any).status_name === 'open').length}
               </h3>
               <p className="text-text-secondary text-sm">Open Issues</p>
             </div>
@@ -186,7 +186,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
             </div>
             <div>
               <h3 className="text-2xl font-bold gradient-text-accent">
-                {issues.filter(i => i.status?.name === 'in-progress').length}
+                {issues.filter(i => (i as any).status_name === 'in-progress').length}
               </h3>
               <p className="text-text-secondary text-sm">In Progress</p>
             </div>
@@ -200,7 +200,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
             </div>
             <div>
               <h3 className="text-2xl font-bold gradient-text-accent">
-                {issues.filter(i => i.status?.name === 'resolved').length}
+                {issues.filter(i => (i as any).status_name === 'resolved').length}
               </h3>
               <p className="text-text-secondary text-sm">Resolved</p>
             </div>
@@ -292,19 +292,19 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
             <div
               key={issue.id}
               className={`glass-surface rounded-xl p-4 border transition-all duration-300 ${(issue.flag_count || 0) > 0
-                  ? 'border-red-500/50 bg-red-500/5'
-                  : 'border-glass-border hover:shadow-lg'
+                ? 'border-red-500/50 bg-red-500/5'
+                : 'border-glass-border hover:shadow-lg'
                 }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-xl">{getCategoryIcon(issue.category?.name || '')}</span>
+                    <span className="text-xl">{getCategoryIcon((issue as any).category_name || '')}</span>
                     <h4 className="font-medium text-text-primary">
                       {issue.title}
                     </h4>
-                    <span className={`px-2 py-1 rounded-full text-xs border ${getStatusColor(issue.status?.name || 'open')}`}>
-                      {issue.status?.name || 'Open'}
+                    <span className={`px-2 py-1 rounded-full text-xs border ${getStatusColor((issue as any).status_name || 'open')}`}>
+                      {(issue as any).status_name || 'Open'}
                     </span>
                     {(issue.flag_count || 0) > 0 && (
                       <span className="px-2 py-1 rounded-full text-xs border bg-red-500/20 text-red-500 border-red-500/30">
@@ -318,11 +318,11 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                   </p>
 
                   <div className="flex items-center gap-4 text-xs text-text-secondary">
-                    <span>By: {issue.reporter?.user_name || 'Anonymous'}</span>
+                    <span>By: {(issue as any).reporter_name || 'Anonymous'}</span>
                     <span>•</span>
                     <span>{new Date(issue.created_at).toLocaleDateString()}</span>
                     <span>•</span>
-                    <span>{issue.category?.name || 'Unknown'}</span>
+                    <span>{(issue as any).category_name || 'Unknown'}</span>
                     {issue.address && (
                       <>
                         <span>•</span>
@@ -334,7 +334,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
 
                 <div className="flex items-center gap-2 ml-4">
                   <select
-                    value={issue.status?.name || 'open'}
+                    value={(issue as any).status_name || 'open'}
                     onChange={(e) => handleUpdateStatus(issue.id, e.target.value)}
                     disabled={loading}
                     className="px-3 py-1 text-xs glass-surface border border-glass-border rounded-lg"
@@ -407,7 +407,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                 </p>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-text-secondary">
-                    {issue.reporter?.user_name || 'Anonymous'}
+                    {(issue as any).reporter_name || 'Anonymous'}
                   </span>
                   <button
                     onClick={() => setSelectedIssue(issue)}
@@ -452,12 +452,12 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-text-secondary text-sm">Status</label>
-                  <p className="text-text-primary">{selectedIssue.status?.name || 'Open'}</p>
+                  <p className="text-text-primary">{(selectedIssue as any).status_name || 'Open'}</p>
                 </div>
 
                 <div>
                   <label className="text-text-secondary text-sm">Category</label>
-                  <p className="text-text-primary">{selectedIssue.category?.name || 'Unknown'}</p>
+                  <p className="text-text-primary">{(selectedIssue as any).category_name || 'Unknown'}</p>
                 </div>
 
                 <div>
