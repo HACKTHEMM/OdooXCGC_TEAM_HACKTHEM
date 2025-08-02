@@ -199,8 +199,8 @@ export default function IssueTracker({
                             <button
                                 onClick={onViewMap}
                                 className={`flex items-center gap-2 px-6 py-3 rounded-xl border transition-all duration-300 hover:scale-105 ${currentView === 'map'
-                                        ? 'bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white shadow-neon'
-                                        : 'glass-surface border-glass-light-hover dark:border-glass-dark-hover text-charcoal dark:text-white hover:shadow-neon'
+                                    ? 'bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white shadow-neon'
+                                    : 'glass-surface border-glass-light-hover dark:border-glass-dark-hover text-charcoal dark:text-white hover:shadow-neon'
                                     }`}
                             >
                                 <MapPin className="h-4 w-4" />
@@ -209,8 +209,8 @@ export default function IssueTracker({
 
                             <button
                                 className={`flex items-center gap-2 px-6 py-3 rounded-xl border transition-all duration-300 hover:scale-105 ${currentView === 'list'
-                                        ? 'bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white shadow-neon'
-                                        : 'glass-surface border-glass-light-hover dark:border-glass-dark-hover text-charcoal dark:text-white hover:shadow-neon'
+                                    ? 'bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white shadow-neon'
+                                    : 'glass-surface border-glass-light-hover dark:border-glass-dark-hover text-charcoal dark:text-white hover:shadow-neon'
                                     }`}
                             >
                                 <List className="h-4 w-4" />
@@ -252,8 +252,8 @@ export default function IssueTracker({
                                                 </div>
                                             )}
                                             <div className="flex-1">
-                                                <h3 className="text-xl font-bold text-charcoal dark:text-white mb-2">{issue.title}</h3>
-                                                <p className="text-slate-gray dark:text-soft-gray mb-4 line-clamp-2">{issue.description}</p>
+                                                <h3 className="text-xl font-bold text-charcoal-text dark:text-white mb-2">{issue.title}</h3>
+                                                <p className="text-muted-gray dark:text-soft-gray mb-4 line-clamp-2">{issue.description}</p>
 
                                                 <div className="flex flex-wrap gap-3 mb-4">
                                                     <span className={`px-3 py-1 rounded-xl text-xs font-semibold border ${getCategoryColor(issue.category)}`}>
@@ -269,7 +269,7 @@ export default function IssueTracker({
                                                     )}
                                                 </div>
 
-                                                <div className="flex items-center justify-between text-sm text-slate-gray dark:text-soft-gray">
+                                                <div className="flex items-center justify-between text-sm text-muted-gray dark:text-soft-gray">
                                                     <div className="flex items-center gap-1">
                                                         <MapPin className="h-3 w-3" />
                                                         <span className="truncate">{issue.location.address}</span>
@@ -282,8 +282,8 @@ export default function IssueTracker({
                                         </div>
 
                                         <div className="flex items-center justify-between pt-4 border-t border-glass-light-hover dark:border-glass-dark-hover">
-                                            <p className="text-xs text-slate-gray dark:text-soft-gray">
-                                                Reported by: <span className="font-medium text-charcoal dark:text-white">{issue.reportedBy}</span>
+                                            <p className="text-xs text-muted-gray dark:text-soft-gray">
+                                                Reported by: <span className="font-medium text-charcoal-text dark:text-white">{issue.reportedBy}</span>
                                             </p>
                                             <div className="flex items-center gap-2">
                                                 {onFlagIssue && (

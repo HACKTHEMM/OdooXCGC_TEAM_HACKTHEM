@@ -3,8 +3,19 @@
 import { useState, useEffect } from 'react';
 import { Camera, MapPin, X, Send } from 'lucide-react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { CreateIssueForm, Category } from '../types/database';
 import { apiClient, isApiSuccess, formatApiError } from '../lib/api-client';
+
+// Dynamically import the LocationMapPicker with SSR disabled
+const LocationMapPicker = dynamic(() => import('./location-map-picker'), {
+  loading: () => (
+    <div className="flex items-center justify-center h-96 border border-glass-border rounded-xl">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-primary"></div>
+    </div>
+  ),
+  ssr: false,
+});
 
 interface ReportIssueFormProps {
   onSubmit: (issue: CreateIssueForm) => void;
@@ -27,8 +38,9 @@ export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormP
   const [categories, setCategories] = useState<Category[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [locationLoading, setLocationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nearbyIssues, setNearbyIssues] = useState<any[]>([]);
+  const [loadingNearby, setLoadingNearby] = useState(false);
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -88,29 +100,39 @@ export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormP
     setImagePreviews(newPreviews);
   };
 
-  const getCurrentLocation = () => {
-    setLocationLoading(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setForm(prev => ({
-            ...prev,
-            latitude,
-            longitude,
-            address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
-          }));
-          setLocationLoading(false);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          alert('Unable to get your location. Please enter manually.');
-          setLocationLoading(false);
-        }
-      );
-    } else {
-      alert('Geolocation is not supported by this browser.');
-      setLocationLoading(false);
+  const handleLocationSelect = (lat: number, lng: number, address?: string) => {
+    setForm(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+      address: address || `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+    }));
+
+    // Fetch nearby issues
+    fetchNearbyIssues(lat, lng);
+  };
+
+  const fetchNearbyIssues = async (lat: number, lng: number) => {
+    if (lat === 0 || lng === 0) return;
+
+    setLoadingNearby(true);
+    try {
+      const response = await apiClient.getNearbyIssues(lat, lng, 0.5); // 500m radius
+      if (isApiSuccess(response)) {
+        // Transform the data to match our interface
+        const transformedIssues = (response.data || []).map((issue: any) => ({
+          id: issue.id,
+          title: issue.title,
+          latitude: Number(issue.latitude),
+          longitude: Number(issue.longitude),
+          status: issue.status_name || 'open'
+        }));
+        setNearbyIssues(transformedIssues);
+      }
+    } catch (error) {
+      console.error('Error fetching nearby issues:', error);
+    } finally {
+      setLoadingNearby(false);
     }
   };
 
@@ -236,47 +258,55 @@ export default function ReportIssueForm({ onSubmit, onCancel }: ReportIssueFormP
 
             {/* Location Information */}
             <div>
-              <label className="block text-text-primary text-sm font-medium mb-2">
+              <label className="block text-text-primary text-sm font-medium mb-4">
                 Location *
               </label>
               <div className="space-y-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter address or location"
-                    value={form.address || ''}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    className="flex-1 input-modern"
+                {/* Address input */}
+                <input
+                  type="text"
+                  placeholder="Address will be auto-filled when you select on map"
+                  value={form.address || ''}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  className="w-full input-modern"
+                />
+
+                {/* Map Picker */}
+                <div className="relative">
+                  <LocationMapPicker
+                    latitude={form.latitude}
+                    longitude={form.longitude}
+                    onLocationSelect={handleLocationSelect}
+                    height="400px"
+                    showNearbyIssues={true}
+                    nearbyIssues={nearbyIssues}
                   />
-                  <button
-                    type="button"
-                    onClick={getCurrentLocation}
-                    disabled={locationLoading}
-                    className="px-4 py-3 bg-accent-primary text-white rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50"
-                  >
-                    {locationLoading ? '📍' : <MapPin className="h-5 w-5" />}
-                  </button>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="number"
-                    placeholder="Latitude"
-                    step="any"
-                    value={form.latitude || ''}
-                    onChange={(e) => handleInputChange('latitude', parseFloat(e.target.value) || 0)}
-                    className="input-modern"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Longitude"
-                    step="any"
-                    value={form.longitude || ''}
-                    onChange={(e) => handleInputChange('longitude', parseFloat(e.target.value) || 0)}
-                    className="input-modern"
-                  />
+
+                  {loadingNearby && (
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent-primary"></div>
+                        <span className="text-sm text-text-secondary">Checking nearby issues...</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
+                {/* Nearby issues warning */}
+                {nearbyIssues.length > 3 && (
+                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                    <div className="flex items-center">
+                      <div className="ml-3">
+                        <p className="text-sm text-yellow-700">
+                          <strong>Multiple issues found in this area!</strong> There are {nearbyIssues.length} existing issues nearby.
+                          Please check if your issue has already been reported to avoid duplicates.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Additional location details */}
                 <input
                   type="text"
                   placeholder="Additional location details (optional)"
