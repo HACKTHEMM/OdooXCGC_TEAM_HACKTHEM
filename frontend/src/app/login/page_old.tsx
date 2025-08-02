@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { LoginForm } from '../../types/database';
 import { apiClient, isApiSuccess, formatApiError } from '../../lib/api-client';
+import { setAuthData } from '../../lib/auth-utils';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState<LoginForm>({
@@ -32,8 +33,7 @@ export default function LoginPage() {
 
       if (isApiSuccess(response)) {
         // Store token and redirect
-        localStorage.setItem('auth_token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        setAuthData(response.data.token, response.data.user);
 
         // Redirect to dashboard or home page
         window.location.href = '/home';

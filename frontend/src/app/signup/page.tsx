@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { CreateUserForm } from '../../types/database';
 import { apiClient, isApiSuccess, formatApiError } from '../../lib/api-client';
+import { setAuthData } from '../../lib/auth-utils';
 
 interface SignupFormData extends CreateUserForm {
     confirm_password: string;
@@ -60,9 +61,12 @@ export default function SignupPage() {
             const response = await apiClient.register(userData);
 
             if (isApiSuccess(response)) {
-                // Show success message and redirect to login
-                alert('Account created successfully! Please log in.');
-                window.location.href = '/login';
+                // Store token and redirect to home instead of login
+                setAuthData(response.data.token, response.data.user);
+
+                // Show success message and redirect to home
+                alert('Account created successfully! Welcome!');
+                window.location.href = '/home';
             } else {
                 setError(response.error || 'Registration failed');
             }

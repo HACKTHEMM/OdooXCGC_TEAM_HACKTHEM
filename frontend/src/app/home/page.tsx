@@ -29,7 +29,7 @@ export default function HomePage() {
         const fetchAnalytics = async () => {
             try {
                 setLoading(true);
-                const response = await apiClient.getAnalyticsSummary();
+                const response = await apiClient.getPublicStats();
 
                 if (isApiSuccess(response)) {
                     setStats(response.data);

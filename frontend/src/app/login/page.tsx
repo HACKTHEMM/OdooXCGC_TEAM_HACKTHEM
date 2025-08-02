@@ -2,10 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { LoginForm } from '../../types/database';
 import { apiClient, isApiSuccess, formatApiError } from '../../lib/api-client';
+import { setAuthData } from '../../lib/auth-utils';
 
 export default function LoginPage() {
+    const router = useRouter();
     const [formData, setFormData] = useState<LoginForm>({
         email: '',
         password: '',
@@ -32,11 +35,10 @@ export default function LoginPage() {
 
             if (isApiSuccess(response)) {
                 // Store token and redirect
-                localStorage.setItem('auth_token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(response.data.user));
+                setAuthData(response.data.token, response.data.user);
 
-                // Redirect to dashboard or home page
-                window.location.href = '/home';
+                // Use Next.js router for navigation (no full page reload)
+                router.push('/home');
             } else {
                 setError(response.error || 'Login failed');
             }

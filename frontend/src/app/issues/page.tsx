@@ -211,8 +211,8 @@ export default function IssuesPage() {
                                             <h3 className="text-xl font-bold text-text-primary">
                                                 {issue.title}
                                             </h3>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(issue.status?.name || 'open')}`}>
-                                                {issue.status?.name || 'Open'}
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor((issue as any).status_name || 'open')}`}>
+                                                {(issue as any).status_name || 'Open'}
                                             </span>
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor('medium')}`}>
                                                 Medium
@@ -224,7 +224,7 @@ export default function IssuesPage() {
                                         <div className="flex items-center gap-4 text-sm text-text-secondary">
                                             <span>📍 {issue.address || 'Location not specified'}</span>
                                             <span>📅 {new Date(issue.created_at).toLocaleDateString()}</span>
-                                            <span>👤 {issue.reporter?.user_name || 'Anonymous'}</span>
+                                            <span>👤 {(issue as any).reporter_name || 'Anonymous'}</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-center gap-2">
@@ -257,7 +257,7 @@ export default function IssuesPage() {
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-4">
                                         <span className="text-sm text-text-secondary">
-                                            Category: {issue.category?.name || 'Unknown'}
+                                            Category: {(issue as any).category_name || 'Unknown'}
                                         </span>
                                         {issue.resolved_at && (
                                             <span className="text-sm text-green-600 dark:text-green-400">
@@ -286,8 +286,8 @@ export default function IssuesPage() {
                                     key={page}
                                     onClick={() => handlePageChange(page)}
                                     className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${currentPage === page
-                                            ? 'bg-accent-primary text-white'
-                                            : 'glass-surface border border-glass-border text-text-primary hover:border-accent-primary'
+                                        ? 'bg-accent-primary text-white'
+                                        : 'glass-surface border border-glass-border text-text-primary hover:border-accent-primary'
                                         }`}
                                 >
                                     {page}

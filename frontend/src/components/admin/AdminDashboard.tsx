@@ -206,7 +206,7 @@ export default function AdminDashboard({ analytics }: AdminDashboardProps) {
                   </p>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-text-secondary">
-                      {issue.reporter?.user_name || 'Anonymous'}
+                      {(issue as any).reporter_name || 'Anonymous'}
                     </span>
                     <span className="text-red-500 font-medium">
                       {issue.flag_count} flags

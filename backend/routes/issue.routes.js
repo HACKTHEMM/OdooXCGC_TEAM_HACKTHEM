@@ -15,6 +15,8 @@ import {
   getIssuePhotos,
   uploadIssuePhotos,
   getStatusLog,
+  getPublicStats,
+  getPublicCategories,
 } from '../controllers/issue.controller.js';
 
 import { verifyAuth, verifyAdminOrAgent } from '../middlewares/auth.js';
@@ -23,6 +25,8 @@ import upload from '../middlewares/upload.js';
 const router = express.Router();
 
 router.get('/', getIssues);
+router.get('/stats', getPublicStats);
+router.get('/categories', getPublicCategories);
 router.get('/map/pins', getIssuesMapPins);
 router.get('/nearby', getNearbyIssues);
 router.post('/', verifyAuth, upload.array('images', 5), createIssue);

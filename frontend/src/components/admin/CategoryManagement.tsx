@@ -12,8 +12,8 @@ interface CategoryManagementProps {
 interface CategoryFormData {
   name: string;
   description: string;
-  icon: string;
-  color: string;
+  icon_url: string;
+  color_code: string;
 }
 
 export default function CategoryManagement({ categories, onCategoriesUpdate }: CategoryManagementProps) {
@@ -22,8 +22,8 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
   const [formData, setFormData] = useState<CategoryFormData>({
     name: '',
     description: '',
-    icon: '📋',
-    color: '#0066FF'
+    icon_url: '📋',
+    color_code: '#0066FF'
   });
   const [loading, setLoading] = useState(false);
 
@@ -38,15 +38,15 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
-      
+
       if (editingCategory) {
         const response = await apiClient.updateCategory(editingCategory.id, formData);
         if (response.success && response.data) {
-          const updatedCategories = categories.map(cat => 
-            cat.id === editingCategory.id ? response.data : cat
+          const updatedCategories = categories.map(cat =>
+            cat.id === editingCategory.id ? response.data! : cat
           );
           onCategoriesUpdate(updatedCategories);
         }
@@ -56,10 +56,10 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
           onCategoriesUpdate([...categories, response.data]);
         }
       }
-      
+
       setShowForm(false);
       setEditingCategory(null);
-      setFormData({ name: '', description: '', icon: '📋', color: '#0066FF' });
+      setFormData({ name: '', description: '', icon_url: '📋', color_code: '#0066FF' });
     } catch (error) {
       console.error('Failed to save category:', error);
     } finally {
@@ -72,19 +72,19 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
     setFormData({
       name: category.name,
       description: category.description || '',
-      icon: category.icon || '📋',
-      color: category.color || '#0066FF'
+      icon_url: category.icon_url || '📋',
+      color_code: category.color_code || '#0066FF'
     });
     setShowForm(true);
   };
 
   const handleDelete = async (categoryId: number) => {
     if (!confirm('Are you sure you want to delete this category?')) return;
-    
+
     try {
       setLoading(true);
       const response = await apiClient.deleteCategory(categoryId);
-      
+
       if (response.success) {
         const updatedCategories = categories.filter(cat => cat.id !== categoryId);
         onCategoriesUpdate(updatedCategories);
@@ -99,7 +99,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
   const handleCancel = () => {
     setShowForm(false);
     setEditingCategory(null);
-    setFormData({ name: '', description: '', icon: '📋', color: '#0066FF' });
+    setFormData({ name: '', description: '', icon_url: '📋', color_code: '#0066FF' });
   };
 
   return (
@@ -129,7 +129,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
             </div>
           </div>
         </div>
-        
+
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-gradient-to-r from-neon-green to-iridescent-purple rounded-xl flex items-center justify-center text-white text-xl">
@@ -143,7 +143,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
             </div>
           </div>
         </div>
-        
+
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-gradient-to-r from-vibrant-pink to-bright-blue rounded-xl flex items-center justify-center text-white text-xl">
@@ -187,7 +187,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
                 ✕
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="text-text-secondary text-sm">Name</label>
@@ -199,7 +199,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
                   required
                 />
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Description</label>
                 <textarea
@@ -209,7 +209,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
                   rows={3}
                 />
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Icon</label>
                 <div className="grid grid-cols-6 gap-2 mt-2">
@@ -217,19 +217,18 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
                     <button
                       key={icon}
                       type="button"
-                      onClick={() => setFormData({ ...formData, icon })}
-                      className={`p-2 rounded-lg text-xl transition-all duration-300 ${
-                        formData.icon === icon
+                      onClick={() => setFormData({ ...formData, icon_url: icon })}
+                      className={`p-2 rounded-lg text-xl transition-all duration-300 ${formData.icon_url === icon
                           ? 'bg-accent-primary text-white'
                           : 'glass-surface border border-glass-border hover:border-accent-primary'
-                      }`}
+                        }`}
                     >
                       {icon}
                     </button>
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Color</label>
                 <div className="grid grid-cols-6 gap-2 mt-2">
@@ -237,16 +236,15 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
                     <button
                       key={color}
                       type="button"
-                      onClick={() => setFormData({ ...formData, color })}
-                      className={`w-8 h-8 rounded-lg border-2 transition-all duration-300 ${
-                        formData.color === color ? 'border-white shadow-lg' : 'border-glass-border'
-                      }`}
+                      onClick={() => setFormData({ ...formData, color_code: color })}
+                      className={`w-8 h-8 rounded-lg border-2 transition-all duration-300 ${formData.color_code === color ? 'border-white shadow-lg' : 'border-glass-border'
+                        }`}
                       style={{ backgroundColor: color }}
                     />
                   ))}
                 </div>
               </div>
-              
+
               <div className="flex gap-3 mt-6">
                 <button
                   type="submit"
@@ -255,7 +253,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
                 >
                   {loading ? 'Saving...' : (editingCategory ? 'Update' : 'Create')}
                 </button>
-                
+
                 <button
                   type="button"
                   onClick={handleCancel}
@@ -278,11 +276,11 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
               className="glass-surface rounded-xl p-4 border border-glass-border hover:shadow-lg transition-all duration-300"
             >
               <div className="flex items-center justify-between mb-3">
-                <div 
+                <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl"
-                  style={{ backgroundColor: category.color || '#0066FF' }}
+                  style={{ backgroundColor: category.color_code || '#0066FF' }}
                 >
-                  {category.icon || '📋'}
+                  {category.icon_url || '📋'}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -300,33 +298,32 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
                   </button>
                 </div>
               </div>
-              
+
               <h4 className="font-medium text-text-primary mb-1">
                 {category.name}
               </h4>
-              
+
               {category.description && (
                 <p className="text-text-secondary text-sm mb-3">
                   {category.description}
                 </p>
               )}
-              
+
               <div className="flex items-center gap-2">
-                <span className={`px-2 py-1 rounded-full text-xs border ${
-                  category.is_active 
-                    ? 'bg-green-500/20 text-green-500 border-green-500/30' 
+                <span className={`px-2 py-1 rounded-full text-xs border ${category.is_active
+                    ? 'bg-green-500/20 text-green-500 border-green-500/30'
                     : 'bg-gray-500/20 text-gray-500 border-gray-500/30'
-                }`}>
+                  }`}>
                   {category.is_active ? 'Active' : 'Inactive'}
                 </span>
-                
+
                 <span className="text-xs text-text-secondary">
                   ID: {category.id}
                 </span>
               </div>
             </div>
           ))}
-          
+
           {categories.length === 0 && (
             <div className="col-span-full text-center py-12">
               <div className="text-6xl mb-4">🏷️</div>

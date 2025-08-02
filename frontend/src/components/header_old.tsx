@@ -1,11 +1,52 @@
 "use client"
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ThemeToggle from './theme-toggle';
+import { clearAuthData, getAuthData } from '../lib/auth-utils';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<{ user_name?: string; email?: string } | null>(null);
+
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = () => {
+      const { user, isAuthenticated } = getAuthData();
+      setUser(user);
+      setIsAuthenticated(isAuthenticated);
+    };
+
+    checkAuth();
+
+    // Listen for storage changes (e.g., when user logs in/out in another tab)
+    const handleStorageChange = () => {
+      checkAuth();
+    };
+
+    // Listen for custom auth state changes (e.g., when user logs in/out in same tab)
+    const handleAuthChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('authStateChanged', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authStateChanged', handleAuthChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      clearAuthData();
+      setIsAuthenticated(false);
+      setUser(null);
+      window.location.href = '/';
+    }
+  };
 
   return (
     <header className="glass-surface border-b border-glass-border backdrop-blur-[20px] sticky top-0 z-50">

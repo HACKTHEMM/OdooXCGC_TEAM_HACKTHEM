@@ -28,12 +28,16 @@ class ApiClient {
   ): Promise<ApiResponse<T>> {
     try {
       // Add JWT token if available
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const headers = {
-        'Content-Type': 'application/json',
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const headers: Record<string, string> = {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...options.headers,
+        ...(options.headers as Record<string, string> || {}),
       };
+
+      // Only add Content-Type for non-FormData requests
+      if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+      }
 
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers,
@@ -41,7 +45,18 @@ class ApiClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Try to get error details from response
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          // If we can't parse the error response, use the default message
+        }
+
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -101,35 +116,34 @@ class ApiClient {
 
     if (issueData.photos) {
       issueData.photos.forEach((photo, index) => {
-        formData.append(`photos`, photo);
+        formData.append(`images`, photo);
       });
     }
 
     return this.request('/issues', {
       method: 'POST',
       body: formData,
-      headers: {}, // Let browser set multipart/form-data headers
     });
   }
 
   async addComment(issueId: number, comment: string): Promise<ApiResponse<void>> {
     return this.request(`/issues/${issueId}/comment`, {
       method: 'POST',
-      body: JSON.stringify({ comment }),
+      body: JSON.stringify({ comment_text: comment }),
     });
   }
 
   async updateIssueStatus(issueId: number, status: IssueStatus): Promise<ApiResponse<void>> {
     return this.request(`/issues/${issueId}/status`, {
-      method: 'PUT',
-      body: JSON.stringify({ status }),
+      method: 'PATCH',
+      body: JSON.stringify({ status_id: status.id || 1, change_reason: `Status changed to ${status.name}` }),
     });
   }
 
   async flagIssue(issueId: number, reason: string): Promise<ApiResponse<void>> {
     return this.request(`/issues/${issueId}/flag`, {
       method: 'POST',
-      body: JSON.stringify({ reason }),
+      body: JSON.stringify({ flag_reason: reason }),
     });
   }
 
@@ -170,7 +184,7 @@ class ApiClient {
   }
 
   async getCategories(): Promise<ApiResponse<Category[]>> {
-    return this.request('/admin/categories');
+    return this.request('/issues/categories');
   }
 
   async createCategory(category: Partial<Category>): Promise<ApiResponse<Category>> {
@@ -211,6 +225,11 @@ class ApiClient {
 
   async getAnalyticsSummary(): Promise<ApiResponse<AnalyticsSummary>> {
     return this.request('/admin/analytics/summary');
+  }
+
+  // Public statistics endpoint (no authentication required)
+  async getPublicStats(): Promise<ApiResponse<AnalyticsSummary>> {
+    return this.request('/issues/stats');
   }
 
   // Image upload endpoint

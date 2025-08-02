@@ -72,16 +72,21 @@ export const getIssues = async (req, res) => {
         `, params.slice(0, -2)); // Remove limit and offset for count
 
         res.json({
-            issues: result.rows,
-            pagination: {
+            success: true,
+            data: {
+                data: result.rows,
+                total: Number(countResult.rows[0].total),
                 page: Number(page),
                 limit: Number(limit),
-                total: Number(countResult.rows[0].total)
+                totalPages: Math.ceil(Number(countResult.rows[0].total) / Number(limit))
             }
         });
     } catch (err) {
         console.error('Get issues error:', err);
-        res.status(500).json({ error: 'Failed to fetch issues' });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch issues'
+        });
     }
 };
 
@@ -108,13 +113,22 @@ export const getIssueById = async (req, res) => {
         `, [id]);
 
         if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Issue not found' });
+            return res.status(404).json({
+                success: false,
+                error: 'Issue not found'
+            });
         }
 
-        res.json({ issue: result.rows[0] });
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
     } catch (err) {
         console.error('Get issue by ID error:', err);
-        res.status(500).json({ error: 'Failed to fetch issue' });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch issue'
+        });
     }
 };
 
@@ -217,6 +231,17 @@ export const createIssue = async (req, res) => {
         return res.status(400).json({ error: 'Title, description, and category are required' });
     }
 
+    // Parse form data values to proper types
+    const parsedCategoryId = parseInt(category_id);
+    const parsedLatitude = parseFloat(latitude);
+    const parsedLongitude = parseFloat(longitude);
+    const parsedIsAnonymous = is_anonymous === 'true' || is_anonymous === true;
+
+    // Validate parsed values
+    if (isNaN(parsedCategoryId) || isNaN(parsedLatitude) || isNaN(parsedLongitude)) {
+        return res.status(400).json({ error: 'Invalid category_id, latitude, or longitude' });
+    }
+
     try {
         const result = await query(`
             INSERT INTO issues (
@@ -226,14 +251,20 @@ export const createIssue = async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
         `, [
-            title, description, category_id, reporter_id, is_anonymous || false,
-            latitude, longitude, address, location_description
+            title, description, parsedCategoryId, reporter_id, parsedIsAnonymous,
+            parsedLatitude, parsedLongitude, address, location_description
         ]);
 
-        res.status(201).json({ issue: result.rows[0] });
+        res.status(201).json({
+            success: true,
+            data: result.rows[0]
+        });
     } catch (err) {
         console.error('Create issue error:', err);
-        res.status(500).json({ error: 'Failed to create issue' });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to create issue'
+        });
     }
 };
 
@@ -431,5 +462,88 @@ export const getNearbyIssues = async (req, res) => {
     } catch (err) {
         console.error('Nearby issues error:', err);
         res.status(500).json({ error: 'Failed to fetch nearby issues' });
+    }
+};
+
+// GET /issues/stats - Get public statistics (no authentication required)
+export const getPublicStats = async (req, res) => {
+    try {
+        // Get basic issue statistics
+        const totalIssuesResult = await query('SELECT COUNT(*) as count FROM issues WHERE is_hidden = false');
+        const resolvedIssuesResult = await query(`
+            SELECT COUNT(*) as count 
+            FROM issues i
+            JOIN issue_status s ON i.status_id = s.id
+            WHERE i.is_hidden = false AND s.name = 'resolved'
+        `);
+        const pendingIssuesResult = await query(`
+            SELECT COUNT(*) as count 
+            FROM issues i
+            JOIN issue_status s ON i.status_id = s.id
+            WHERE i.is_hidden = false AND s.name IN ('open', 'in_progress')
+        `);
+
+        // Get popular categories (top 5)
+        const popularCategoriesResult = await query(`
+            SELECT c.name as category_name, COUNT(i.id) as issue_count
+            FROM categories c
+            LEFT JOIN issues i ON c.id = i.category_id AND i.is_hidden = false
+            GROUP BY c.id, c.name
+            ORDER BY issue_count DESC
+            LIMIT 5
+        `);
+
+        // Get recent activity (last 10 issues)
+        const recentActivityResult = await query(`
+            SELECT 
+                i.title,
+                c.name as category_name,
+                s.name as status_name,
+                i.created_at
+            FROM issues i
+            JOIN categories c ON i.category_id = c.id
+            JOIN issue_status s ON i.status_id = s.id
+            WHERE i.is_hidden = false
+            ORDER BY i.created_at DESC
+            LIMIT 10
+        `);
+
+        const stats = {
+            totalIssues: parseInt(totalIssuesResult.rows[0].count),
+            resolvedIssues: parseInt(resolvedIssuesResult.rows[0].count),
+            pendingIssues: parseInt(pendingIssuesResult.rows[0].count),
+            totalUsers: 0, // Not exposing user counts for privacy
+            activeUsers: 0, // Not exposing user counts for privacy
+            popularCategories: popularCategoriesResult.rows,
+            recentActivity: recentActivityResult.rows
+        };
+
+        res.json({ success: true, data: stats });
+    } catch (err) {
+        console.error('Public stats error:', err);
+        res.status(500).json({ error: 'Failed to fetch public statistics' });
+    }
+};
+
+// GET /categories - Get public categories (no authentication required)
+export const getPublicCategories = async (req, res) => {
+    try {
+        const result = await query(`
+            SELECT id, name, description, color, icon, is_active, created_at
+            FROM categories
+            WHERE is_active = true
+            ORDER BY name ASC
+        `);
+
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (err) {
+        console.error('Get public categories error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch categories'
+        });
     }
 };
