@@ -78,7 +78,7 @@ export default function LoginPage() {
             <h2 className="text-3xl font-bold gradient-text-primary mb-2">
               Welcome Back
             </h2>
-            <p className="text-soft-gray">
+            <p className="text-black">
               Sign in to continue making a difference
             </p>
           </div>

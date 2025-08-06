@@ -118,7 +118,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-bright-blue to-vibrant-pink rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-bright-blue to-vibrant-pink rounded-xl flex items-center justify-center text-black text-xl">
               🏷️
             </div>
             <div>
@@ -132,7 +132,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
 
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-neon-green to-iridescent-purple rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-neon-green to-iridescent-purple rounded-xl flex items-center justify-center text-black text-xl">
               ✅
             </div>
             <div>
@@ -146,7 +146,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
 
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-vibrant-pink to-bright-blue rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-vibrant-pink to-bright-blue rounded-xl flex items-center justify-center text-black text-xl">
               📊
             </div>
             <div>
@@ -219,8 +219,8 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
                       type="button"
                       onClick={() => setFormData({ ...formData, icon_url: icon })}
                       className={`p-2 rounded-lg text-xl transition-all duration-300 ${formData.icon_url === icon
-                          ? 'bg-accent-primary text-white'
-                          : 'glass-surface border border-glass-border hover:border-accent-primary'
+                        ? 'bg-accent-primary text-black'
+                        : 'glass-surface border border-glass-border hover:border-accent-primary'
                         }`}
                     >
                       {icon}
@@ -277,7 +277,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
             >
               <div className="flex items-center justify-between mb-3">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl"
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-black text-xl"
                   style={{ backgroundColor: category.color_code || '#0066FF' }}
                 >
                   {category.icon_url || '📋'}
@@ -292,7 +292,7 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
                   <button
                     onClick={() => handleDelete(category.id)}
                     disabled={loading}
-                    className="px-3 py-1 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                    className="px-3 py-1 text-xs bg-red-500 text-black rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
                   >
                     Delete
                   </button>
@@ -311,8 +311,8 @@ export default function CategoryManagement({ categories, onCategoriesUpdate }: C
 
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-1 rounded-full text-xs border ${category.is_active
-                    ? 'bg-green-500/20 text-green-500 border-green-500/30'
-                    : 'bg-gray-500/20 text-gray-500 border-gray-500/30'
+                  ? 'bg-green-500/20 text-green-500 border-green-500/30'
+                  : 'bg-gray-500/20 text-gray-500 border-gray-500/30'
                   }`}>
                   {category.is_active ? 'Active' : 'Inactive'}
                 </span>

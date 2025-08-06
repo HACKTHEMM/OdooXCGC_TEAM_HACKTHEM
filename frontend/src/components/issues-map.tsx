@@ -26,7 +26,7 @@ const ZoomControl = dynamic(
     { ssr: false }
 );
 
-import { Icon, DivIcon } from "leaflet";
+import { DivIcon } from "leaflet";
 import type { Map as LeafletMap } from "leaflet";
 
 interface IssuesMapProps {

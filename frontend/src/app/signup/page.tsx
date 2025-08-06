@@ -52,10 +52,10 @@ export default function SignupPage() {
         try {
             // Create the user data without confirm_password and accept_terms
             const userData: CreateUserForm = {
-                user_name: formData.user_name,
-                email: formData.email,
+                user_name: formData.user_name.trim(),
+                email: formData.email.toLowerCase().trim(),
                 password: formData.password,
-                phone: formData.phone || undefined
+                phone: formData.phone?.trim() || undefined
             };
 
             const response = await apiClient.register(userData);

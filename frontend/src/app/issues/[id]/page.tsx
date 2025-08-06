@@ -4,25 +4,15 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/header';
-import { Issue, IssueStatusLog } from '../../../types/database';
-import { apiClient, isApiSuccess, formatApiError } from '../../../lib/api-client';
-
-interface Comment {
-    id: number;
-    author: string;
-    date: string;
-    message: string;
-}
+import { Issue } from '../../../types/database';
+import { apiClient, isApiSuccess } from '../../../lib/api-client';
 
 export default function IssueDetailPage() {
     const params = useParams();
     const [issue, setIssue] = useState<Issue | null>(null);
-    const [comments, setComments] = useState<Comment[]>([]);
-    const [newComment, setNewComment] = useState('');
     const [hasUpvoted, setHasUpvoted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [submittingComment, setSubmittingComment] = useState(false);
 
     useEffect(() => {
         const fetchIssue = async () => {
@@ -70,31 +60,6 @@ export default function IssueDetailPage() {
         }
     };
 
-    const handleCommentSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!issue || !newComment.trim()) return;
-
-        try {
-            setSubmittingComment(true);
-            const response = await apiClient.addComment(issue.id, newComment);
-
-            if (isApiSuccess(response)) {
-                setNewComment('');
-                // Refresh the issue data to get updated comments
-                const updatedResponse = await apiClient.getIssueById(issue.id);
-                if (isApiSuccess(updatedResponse)) {
-                    setIssue(updatedResponse.data);
-                }
-            } else {
-                console.error('Failed to add comment:', response.error);
-            }
-        } catch (err) {
-            console.error('Failed to add comment:', err);
-        } finally {
-            setSubmittingComment(false);
-        }
-    };
-
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'open':
@@ -104,9 +69,9 @@ export default function IssueDetailPage() {
             case 'resolved':
                 return 'bg-green-500/10 text-green-600 border-green-500/20';
             case 'closed':
-                return 'bg-muted-gray/10 text-muted-gray border-muted-gray/20';
+                return 'bg-gray-100/50 text-black border-gray-300/20';
             default:
-                return 'bg-muted-gray/10 text-muted-gray border-muted-gray/20';
+                return 'bg-gray-100/50 text-black border-gray-300/20';
         }
     };
 
@@ -141,14 +106,14 @@ export default function IssueDetailPage() {
                 <div className="flex items-center justify-center min-h-screen">
                     <div className="text-center">
                         <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-black mb-2">
                             Issue Not Found
                         </h3>
-                        <p className="text-gray-700 dark:text-soft-gray mb-6">
+                        <p className="text-gray-700 dark:text-gray-300 mb-6">
                             {error || 'The issue you are looking for could not be found.'}
                         </p>
                         <Link
@@ -179,7 +144,7 @@ export default function IssueDetailPage() {
                 <div className="mb-6">
                     <Link
                         href="/issues"
-                        className="flex items-center gap-2 text-gray-700 dark:text-soft-gray hover:text-gray-900 dark:hover:text-white transition-colors"
+                        className="flex items-center gap-2 text-gray-700 dark:text-black hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -193,7 +158,7 @@ export default function IssueDetailPage() {
                     <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-4">
-                                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-black">
                                     {issue.title}
                                 </h1>
                                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(issue.status?.name || 'open')}`}>
@@ -201,32 +166,32 @@ export default function IssueDetailPage() {
                                 </span>
                             </div>
 
-                            <p className="text-lg text-gray-800 dark:text-soft-gray mb-6">
+                            <p className="text-lg text-gray-800 dark:text-gray-200 mb-6">
                                 {issue.description}
                             </p>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                                 <div className="flex items-center gap-2">
-                                    <span className="font-medium text-gray-900 dark:text-white">Category:</span>
-                                    <span className="text-gray-800 dark:text-soft-gray">
+                                    <span className="font-medium text-gray-900 dark:text-black">Category:</span>
+                                    <span className="text-gray-800 dark:text-gray-200">
                                         {issue.category?.name || 'Unknown'}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="font-medium text-gray-900 dark:text-white">Reported by:</span>
-                                    <span className="text-gray-800 dark:text-soft-gray">
+                                    <span className="font-medium text-gray-900 dark:text-black">Reported by:</span>
+                                    <span className="text-gray-800 dark:text-gray-200">
                                         {issue.reporter?.user_name || 'Anonymous'}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="font-medium text-gray-900 dark:text-white">Date:</span>
-                                    <span className="text-gray-800 dark:text-soft-gray">
+                                    <span className="font-medium text-gray-900 dark:text-black">Date:</span>
+                                    <span className="text-gray-800 dark:text-gray-200">
                                         {formatDate(issue.created_at)}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="font-medium text-gray-900 dark:text-white">Location:</span>
-                                    <span className="text-gray-800 dark:text-soft-gray">
+                                    <span className="font-medium text-gray-900 dark:text-black">Location:</span>
+                                    <span className="text-gray-800 dark:text-gray-200">
                                         {issue.address || issue.location_description || 'Location not specified'}
                                     </span>
                                 </div>
@@ -238,8 +203,8 @@ export default function IssueDetailPage() {
                                 onClick={handleUpvote}
                                 disabled={hasUpvoted}
                                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${hasUpvoted
-                                    ? 'bg-green-500 text-white cursor-not-allowed'
-                                    : 'bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-white hover:shadow-neon'
+                                    ? 'bg-green-500 text-black cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple text-black hover:shadow-neon'
                                     }`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,7 +226,7 @@ export default function IssueDetailPage() {
                 {/* Photos Section */}
                 {issue.photos && issue.photos.length > 0 && (
                     <div className="glass-surface rounded-2xl p-6 border border-glass-light-hover dark:border-glass-dark-hover mb-8">
-                        <h3 className="text-xl font-semibold text-charcoal-text dark:text-white mb-4">Photos</h3>
+                        <h3 className="text-xl font-semibold text-charcoal-text dark:text-black mb-4">Photos</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {issue.photos.map((photo) => (
                                 <div key={photo.id} className="aspect-video rounded-xl overflow-hidden">
@@ -279,22 +244,22 @@ export default function IssueDetailPage() {
                 {/* Status History */}
                 {issue.status_history && issue.status_history.length > 0 && (
                     <div className="glass-surface rounded-2xl p-6 border border-glass-light-hover dark:border-glass-dark-hover mb-8">
-                        <h3 className="text-xl font-semibold text-charcoal-text dark:text-white mb-4">Status History</h3>
+                        <h3 className="text-xl font-semibold text-charcoal-text dark:text-black mb-4">Status History</h3>
                         <div className="space-y-4">
                             {issue.status_history.map((log) => (
                                 <div key={log.id} className="flex items-start gap-4">
                                     <div className="w-3 h-3 bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple rounded-full mt-2"></div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-medium text-charcoal-text dark:text-white">
+                                            <span className="font-medium text-charcoal-text dark:text-black">
                                                 {log.new_status?.name || 'Status Updated'}
                                             </span>
-                                            <span className="text-sm text-muted-gray dark:text-soft-gray">
+                                            <span className="text-sm text-gray-600 dark:text-gray-300">
                                                 {formatDate(log.changed_at)}
                                             </span>
                                         </div>
                                         {log.notes && (
-                                            <p className="text-muted-gray dark:text-soft-gray text-sm">
+                                            <p className="text-gray-600 dark:text-gray-300 text-sm">
                                                 {log.notes}
                                             </p>
                                         )}
@@ -304,57 +269,6 @@ export default function IssueDetailPage() {
                         </div>
                     </div>
                 )}
-
-                {/* Comments Section */}
-                <div className="glass-surface rounded-2xl p-6 border border-glass-light-hover dark:border-glass-dark-hover">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Comments</h3>
-
-                    {/* Add Comment Form */}
-                    <form onSubmit={handleCommentSubmit} className="mb-6">
-                        <div className="flex gap-4">
-                            <textarea
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                placeholder="Add a comment..."
-                                className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-electric-coral dark:focus:ring-neon-green text-gray-900 dark:text-white placeholder-gray-600 dark:placeholder-soft-gray resize-none"
-                                rows={3}
-                                disabled={submittingComment}
-                            />
-                            <button
-                                type="submit"
-                                disabled={!newComment.trim() || submittingComment}
-                                className="px-6 py-3 rounded-xl bg-gradient-to-r from-electric-coral to-lavender-mist dark:from-neon-green dark:to-iridescent-purple text-white hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {submittingComment ? 'Posting...' : 'Post Comment'}
-                            </button>
-                        </div>
-                    </form>
-
-                    {/* Comments List */}
-                    <div className="space-y-4">
-                        {comments.length === 0 ? (
-                            <p className="text-gray-700 dark:text-soft-gray text-center py-8">
-                                No comments yet. Be the first to comment!
-                            </p>
-                        ) : (
-                            comments.map((comment) => (
-                                <div key={comment.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="font-medium text-gray-900 dark:text-white">
-                                            {comment.author}
-                                        </span>
-                                        <span className="text-sm text-gray-700 dark:text-soft-gray">
-                                            {comment.date}
-                                        </span>
-                                    </div>
-                                    <p className="text-gray-800 dark:text-soft-gray">
-                                        {comment.message}
-                                    </p>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
             </div>
         </div>
     );

@@ -1,21 +1,18 @@
 // API client for CivicTrack application database operations
 
 import {
+  User,
   Issue,
   Category,
-  IssueStatus,
-  User,
   CreateIssueForm,
-  UpdateIssueForm,
-  CreateUserForm,
-  LoginForm,
   IssueFilters,
-  ApiResponse,
   PaginatedResponse,
   IssuePhoto,
-  IssueStatusLog,
-  Notification,
-  AnalyticsSummary
+  CreateUserForm,
+  LoginRequest,
+  PasswordChangeRequest,
+  ProfileUpdateRequest,
+  IssueStatus
 } from '../types/database';
 
 // Base configuration

@@ -29,27 +29,11 @@ export default {
         'glass-dark': 'rgba(43, 45, 66, 0.1)',
         'glass-dark-hover': 'rgba(43, 45, 66, 0.2)',
 
-        // Legacy color support for gradual migration
+        // Essential aliases for consistency
         'accent-primary': '#FF6B6B',
         'accent-secondary': '#5AC8FA',
-        'accent-tertiary': '#C3A9FF',
         'text-primary': '#2B2D42',
         'text-secondary': '#6B7280',
-
-        // Additional aliases for consistency
-        'charcoal': '#2B2D42',
-        'slate-gray': '#6B7280',
-        'bright-blue': '#5AC8FA',
-        'vibrant-pink': '#FF6B6B',
-
-        // Legacy dark theme (kept for backwards compatibility)
-        'midnight': '#0F0F1C',
-        'neon-green': '#00E6A0',
-        'iridescent-purple': '#A972FF',
-        'cyber-blue': '#00CFFF',
-        'magenta-rose': '#FF4DCC',
-        'soft-gray': '#AAAAAA',
-        'pure-white': '#FFFFFF',
       },
       backgroundImage: {
         'modern-gradient': 'linear-gradient(135deg, #FF6B6B 0%, #5AC8FA 50%, #C3A9FF 100%)',
@@ -58,12 +42,6 @@ export default {
         'pastel-gradient': 'linear-gradient(135deg, #F8FAFC 0%, #FF6B6B 25%, #5AC8FA 75%, #C3A9FF 100%)',
         'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%)',
         'twilight-gradient': 'radial-gradient(ellipse at top, #F5F7FA 0%, #E2E8F0 50%, #CBD5E1 100%)',
-
-        // Legacy gradients
-        'futuristic-gradient': 'linear-gradient(135deg, #00E6A0 0%, #A972FF 50%, #00CFFF 100%)',
-        'electric-gradient': 'linear-gradient(135deg, #FF4DCC 0%, #00CFFF 50%, #00E6A0 100%)',
-        'cyber-gradient': 'linear-gradient(135deg, #00CFFF 0%, #A972FF 100%)',
-        'neon-gradient': 'linear-gradient(135deg, #00E6A0 0%, #FF4DCC 100%)',
       },
       backdropBlur: {
         'glass': '20px',
@@ -78,13 +56,6 @@ export default {
         'modern': '0 0 30px rgba(255, 107, 107, 0.3), 0 0 60px rgba(90, 200, 250, 0.2)',
         'soft': '0 4px 16px rgba(43, 45, 66, 0.1)',
         'soft-lg': '0 8px 32px rgba(43, 45, 66, 0.15)',
-
-        // Legacy shadows
-        'neon': '0 0 20px rgba(0, 230, 160, 0.4)',
-        'cyber': '0 0 20px rgba(0, 207, 255, 0.4)',
-        'magenta': '0 0 20px rgba(255, 77, 204, 0.4)',
-        'purple': '0 0 20px rgba(169, 114, 255, 0.4)',
-        'futuristic': '0 0 30px rgba(0, 230, 160, 0.3), 0 0 60px rgba(169, 114, 255, 0.2)',
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',
@@ -99,8 +70,8 @@ export default {
           '50%': { transform: 'translateY(-10px)' },
         },
         glow: {
-          'from': { boxShadow: '0 0 20px rgba(0, 230, 160, 0.3)' },
-          'to': { boxShadow: '0 0 30px rgba(0, 230, 160, 0.6)' },
+          'from': { boxShadow: '0 0 20px rgba(255, 107, 107, 0.3)' },
+          'to': { boxShadow: '0 0 30px rgba(255, 107, 107, 0.6)' },
         },
         slideUp: {
           'from': { opacity: '0', transform: 'translateY(30px)' },
@@ -108,12 +79,12 @@ export default {
         },
         pulseNeon: {
           '0%, 100%': {
-            boxShadow: '0 0 20px rgba(0, 230, 160, 0.4)',
-            borderColor: 'rgba(0, 230, 160, 0.6)'
+            boxShadow: '0 0 20px rgba(255, 107, 107, 0.4)',
+            borderColor: 'rgba(255, 107, 107, 0.6)'
           },
           '50%': {
-            boxShadow: '0 0 40px rgba(0, 230, 160, 0.8)',
-            borderColor: 'rgba(0, 230, 160, 1)'
+            boxShadow: '0 0 40px rgba(255, 107, 107, 0.8)',
+            borderColor: 'rgba(255, 107, 107, 1)'
           },
         },
         gradientShift: {

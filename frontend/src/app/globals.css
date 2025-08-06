@@ -181,28 +181,6 @@ body {
   box-shadow: 0 0 20px var(--lavender-mist), 0 0 40px rgba(195, 169, 255, 0.3);
 }
 
-/* Legacy support - Neon effects for backwards compatibility */
-.neon-glow {
-  box-shadow: 0 0 20px #00E6A0, 0 0 40px rgba(0, 230, 160, 0.3);
-}
-
-.neon-text {
-  text-shadow: 0 0 10px #00E6A0, 0 0 20px rgba(0, 230, 160, 0.5);
-}
-
-.neon-border {
-  border: 1px solid #00E6A0;
-  box-shadow: 0 0 10px #00E6A0, inset 0 0 10px rgba(0, 230, 160, 0.1);
-}
-
-.cyber-glow {
-  box-shadow: 0 0 20px #00CFFF, 0 0 40px rgba(0, 207, 255, 0.3);
-}
-
-.magenta-glow {
-  box-shadow: 0 0 20px #FF4DCC, 0 0 40px rgba(255, 77, 204, 0.3);
-}
-
 /* Interactive animations */
 .hover-float:hover {
   transform: translateY(-4px);
@@ -517,5 +495,12 @@ body {
     padding: 16px;
     font-size: 16px;
     /* Prevents zoom on iOS */
+  }
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .dark\:text-gray-200 {
+    color: lab(0 0 0);
   }
 }

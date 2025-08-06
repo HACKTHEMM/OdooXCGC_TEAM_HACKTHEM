@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { MapPin, Navigation, Search, X } from 'lucide-react';
+import { MapPin, Navigation, Search } from 'lucide-react';
 
 // Dynamically import Leaflet components with ES module syntax
 const MapContainer = dynamic(
@@ -283,7 +283,7 @@ export default function LocationMapPicker({
                     type="button"
                     onClick={getCurrentLocation}
                     disabled={isGettingLocation}
-                    className="flex items-center gap-2 px-4 py-2 bg-accent-primary text-white rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2 bg-accent-primary text-black rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Navigation className="h-4 w-4" />
                     {isGettingLocation ? 'Getting location...' : 'Use my location'}

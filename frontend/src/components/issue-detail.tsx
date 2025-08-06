@@ -72,13 +72,13 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'water-supply': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'lighting': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'roads': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'cleanliness': return 'bg-green-100 text-green-800 border-green-200';
-      case 'public-safety': return 'bg-red-100 text-red-800 border-red-200';
-      case 'obstructions': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'water-supply': return 'bg-blue-100 text-black border-blue-200';
+      case 'lighting': return 'bg-yellow-100 text-black border-yellow-200';
+      case 'roads': return 'bg-gray-100 text-black border-gray-200';
+      case 'cleanliness': return 'bg-green-100 text-black border-green-200';
+      case 'public-safety': return 'bg-red-100 text-black border-red-200';
+      case 'obstructions': return 'bg-orange-100 text-black border-orange-200';
+      default: return 'bg-purple-100 text-black border-purple-200';
     }
   };
 
@@ -93,19 +93,19 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'reported': return 'bg-red-50 text-red-700 border-red-200';
-      case 'in-progress': return 'bg-orange-50 text-orange-700 border-orange-200';
-      case 'resolved': return 'bg-green-50 text-green-700 border-green-200';
-      default: return 'bg-gray-50 text-gray-700 border-gray-200';
+      case 'reported': return 'bg-red-50 text-black border-red-200';
+      case 'in-progress': return 'bg-orange-50 text-black border-orange-200';
+      case 'resolved': return 'bg-green-50 text-black border-green-200';
+      default: return 'bg-gray-50 text-black border-gray-200';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-red-600 bg-red-50 border-red-200';
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'low': return 'text-green-600 bg-green-50 border-green-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'high': return 'text-black bg-red-50 border-red-200';
+      case 'medium': return 'text-black bg-yellow-50 border-yellow-200';
+      case 'low': return 'text-black bg-green-50 border-green-200';
+      default: return 'text-black bg-gray-50 border-gray-200';
     }
   };
 
@@ -185,14 +185,14 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
               </div>
 
               <div className="prose max-w-none">
-                <p className="text-gray-700 leading-relaxed">{issue.description}</p>
+                <p className="text-black leading-relaxed">{issue.description}</p>
               </div>
             </div>
 
             {/* Images */}
             {issue.images.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-black mb-4 flex items-center gap-2">
                   <Camera className="h-5 w-5" />
                   Photos ({issue.images.length})
                 </h2>
@@ -211,7 +211,7 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
                         className="w-full h-48 object-cover rounded-lg border hover:shadow-md transition-shadow"
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity rounded-lg flex items-center justify-center">
-                        <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium">
+                        <span className="opacity-0 group-hover:opacity-100 text-black text-sm font-medium">
                           Click to enlarge
                         </span>
                       </div>
@@ -223,7 +223,7 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
 
             {/* Status History */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-black mb-4 flex items-center gap-2">
                 <Clock className="h-5 w-5" />
                 Status History
               </h2>
@@ -237,18 +237,18 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium text-black">
                           {change.status.replace('-', ' ').toUpperCase()}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-black">
                           {change.timestamp.toLocaleDateString()} at {change.timestamp.toLocaleTimeString()}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-black">
                         Updated by: <span className="font-medium">{change.updatedBy}</span>
                       </p>
                       {change.note && (
-                        <p className="text-sm text-gray-700 mt-1">{change.note}</p>
+                        <p className="text-sm text-black mt-1">{change.note}</p>
                       )}
                     </div>
                   </div>
@@ -261,13 +261,13 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
           <div className="space-y-6">
             {/* Location */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-black mb-4 flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
                 Location
               </h3>
               <div className="space-y-3">
-                <p className="text-sm text-gray-600">{issue.location.address}</p>
-                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                <p className="text-sm text-black">{issue.location.address}</p>
+                <div className="grid grid-cols-2 gap-2 text-xs text-black">
                   <div>
                     <span className="font-medium">Latitude:</span>
                     <br />
@@ -280,7 +280,7 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
                   </div>
                 </div>
                 {issue.location.distance && (
-                  <div className="flex items-center gap-1 text-sm text-blue-600">
+                  <div className="flex items-center gap-1 text-sm text-black">
                     <MapPin className="h-4 w-4" />
                     {issue.location.distance.toFixed(1)} km from you
                   </div>
@@ -296,24 +296,24 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
 
             {/* Reporter Info */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-black mb-4 flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Reporter
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-900">{issue.reportedBy}</span>
+                  <span className="text-sm font-medium text-black">{issue.reportedBy}</span>
                   {issue.isAnonymous && (
-                    <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">
+                    <span className="px-2 py-1 bg-purple-100 text-black text-xs rounded-full">
                       Anonymous
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-black">
                   <Calendar className="h-4 w-4" />
                   Reported on {issue.reportedAt.toLocaleDateString()}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-black">
                   Last updated: {issue.updatedAt.toLocaleDateString()}
                 </div>
               </div>
@@ -321,32 +321,32 @@ export default function IssueDetail({ issue, onBack, onFlag, onShare, onViewMap 
 
             {/* Issue Stats */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Issue Stats</h3>
+              <h3 className="text-lg font-semibold text-black mb-4">Issue Stats</h3>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Issue ID:</span>
-                  <span className="font-mono text-gray-900">#{issue.id}</span>
+                  <span className="text-black">Issue ID:</span>
+                  <span className="font-mono text-black">#{issue.id}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Priority:</span>
-                  <span className={`font-medium ${issue.priority === 'high' ? 'text-red-600' :
-                    issue.priority === 'medium' ? 'text-yellow-600' :
-                      'text-green-600'
+                  <span className="text-black">Priority:</span>
+                  <span className={`font-medium ${issue.priority === 'high' ? 'text-black' :
+                    issue.priority === 'medium' ? 'text-black' :
+                      'text-black'
                     }`}>
                     {issue.priority.toUpperCase()}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Status Updates:</span>
-                  <span className="font-medium text-gray-900">{issue.statusHistory.length}</span>
+                  <span className="text-black">Status Updates:</span>
+                  <span className="font-medium text-black">{issue.statusHistory.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Photos:</span>
-                  <span className="font-medium text-gray-900">{issue.images.length}</span>
+                  <span className="text-black">Photos:</span>
+                  <span className="font-medium text-black">{issue.images.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Flags:</span>
-                  <span className="font-medium text-gray-900">{issue.flagCount}</span>
+                  <span className="text-black">Flags:</span>
+                  <span className="font-medium text-black">{issue.flagCount}</span>
                 </div>
               </div>
             </div>

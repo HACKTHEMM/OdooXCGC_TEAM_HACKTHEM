@@ -78,7 +78,7 @@ export default function LoginPage() {
                         <h2 className="text-3xl font-bold gradient-text-primary mb-2">
                             Welcome Back
                         </h2>
-                        <p className="text-soft-gray">
+                        <p className="text-black">
                             Sign in to continue making a difference
                         </p>
                     </div>
@@ -132,7 +132,7 @@ export default function LoginPage() {
                                     className="h-4 w-4 text-neon-green focus:ring-neon-green border-glass-border rounded bg-glass-surface"
                                     disabled={loading}
                                 />
-                                <label htmlFor="remember_me" className="ml-2 block text-sm text-soft-gray">
+                                <label htmlFor="remember_me" className="ml-2 block text-sm text-black">
                                     Remember me
                                 </label>
                             </div>
@@ -169,7 +169,7 @@ export default function LoginPage() {
 
                         {/* Sign Up Link */}
                         <div className="text-center">
-                            <p className="text-soft-gray">
+                            <p className="text-black">
                                 Don&apos;t have an account?{' '}
                                 <Link href="/signup" className="text-neon-green hover:text-cyber-blue transition-colors duration-300 font-medium">
                                     Sign up here

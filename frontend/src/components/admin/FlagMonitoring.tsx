@@ -32,7 +32,7 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
     try {
       setLoading(true);
       const response = await apiClient.getFlaggedIssues();
-      
+
       if (response.success && response.data) {
         setFlaggedIssues(response.data);
         // In a real implementation, you'd have a separate endpoint for flag details
@@ -60,14 +60,14 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
       // In a real implementation, you'd call an API to resolve the flag
       const updatedFlags = flagDetails.filter(flag => flag.id !== flagId);
       setFlagDetails(updatedFlags);
-      
+
       // Update the issue's flag count
       const updatedIssues = flaggedIssues.map(issue => ({
         ...issue,
         flag_count: Math.max(0, (issue.flag_count || 0) - 1)
       }));
       setFlaggedIssues(updatedIssues);
-      
+
       if (onIssueUpdate) {
         onIssueUpdate(updatedIssues);
       }
@@ -82,11 +82,11 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
     try {
       setLoading(true);
       const response = await apiClient.hideIssue(issueId);
-      
+
       if (response.success) {
         const updatedIssues = flaggedIssues.filter(issue => issue.id !== issueId);
         setFlaggedIssues(updatedIssues);
-        
+
         if (onIssueUpdate) {
           onIssueUpdate(updatedIssues);
         }
@@ -131,7 +131,7 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center text-black text-xl">
               🚩
             </div>
             <div>
@@ -142,10 +142,10 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
             </div>
           </div>
         </div>
-        
+
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-black text-xl">
               ⚠️
             </div>
             <div>
@@ -156,10 +156,10 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
             </div>
           </div>
         </div>
-        
+
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-black text-xl">
               ⏳
             </div>
             <div>
@@ -170,10 +170,10 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
             </div>
           </div>
         </div>
-        
+
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-black text-xl">
               ✅
             </div>
             <div>
@@ -192,31 +192,28 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
           <div className="flex gap-2">
             <button
               onClick={() => setFilterStatus('all')}
-              className={`px-4 py-2 rounded-xl transition-all duration-300 ${
-                filterStatus === 'all'
-                  ? 'bg-accent-primary text-white'
+              className={`px-4 py-2 rounded-xl transition-all duration-300 ${filterStatus === 'all'
+                  ? 'bg-accent-primary text-black'
                   : 'glass-surface border border-glass-border text-text-secondary hover:text-accent-primary'
-              }`}
+                }`}
             >
               All Flags
             </button>
             <button
               onClick={() => setFilterStatus('pending')}
-              className={`px-4 py-2 rounded-xl transition-all duration-300 ${
-                filterStatus === 'pending'
-                  ? 'bg-accent-primary text-white'
+              className={`px-4 py-2 rounded-xl transition-all duration-300 ${filterStatus === 'pending'
+                  ? 'bg-accent-primary text-black'
                   : 'glass-surface border border-glass-border text-text-secondary hover:text-accent-primary'
-              }`}
+                }`}
             >
               Pending Review
             </button>
             <button
               onClick={() => setFilterStatus('resolved')}
-              className={`px-4 py-2 rounded-xl transition-all duration-300 ${
-                filterStatus === 'resolved'
-                  ? 'bg-accent-primary text-white'
+              className={`px-4 py-2 rounded-xl transition-all duration-300 ${filterStatus === 'resolved'
+                  ? 'bg-accent-primary text-black'
                   : 'glass-surface border border-glass-border text-text-secondary hover:text-accent-primary'
-              }`}
+                }`}
             >
               Resolved
             </button>
@@ -229,7 +226,7 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
         <h3 className="text-xl font-bold gradient-text-charcoal mb-6">
           Flag Details ({filteredFlags.length})
         </h3>
-        
+
         <div className="space-y-4">
           {filteredFlags.map((flag) => (
             <div
@@ -247,11 +244,11 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
                       Flag #{flag.id}
                     </span>
                   </div>
-                  
+
                   <p className="text-text-secondary text-sm mb-3">
                     <strong>Flag Reason:</strong> {flag.reason}
                   </p>
-                  
+
                   <div className="flex items-center gap-4 text-xs text-text-secondary">
                     <span>Flagged by: {flag.flagged_by}</span>
                     <span>•</span>
@@ -262,7 +259,7 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
                     <span>Category: {flag.issue.category?.name || 'Unknown'}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2 ml-4">
                   <button
                     onClick={() => setSelectedFlag(flag)}
@@ -270,19 +267,19 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
                   >
                     Review
                   </button>
-                  
+
                   <button
                     onClick={() => handleResolveFlag(flag.id)}
                     disabled={loading}
-                    className="px-3 py-1 text-xs bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
+                    className="px-3 py-1 text-xs bg-green-500 text-black rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
                   >
                     Resolve
                   </button>
-                  
+
                   <button
                     onClick={() => handleHideIssue(flag.issue.id)}
                     disabled={loading}
-                    className="px-3 py-1 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                    className="px-3 py-1 text-xs bg-red-500 text-black rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
                   >
                     Hide Issue
                   </button>
@@ -290,7 +287,7 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
               </div>
             </div>
           ))}
-          
+
           {filteredFlags.length === 0 && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">✅</div>
@@ -317,7 +314,7 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
                 ✕
               </button>
             </div>
-            
+
             <div className="space-y-6">
               <div className="p-4 glass-surface rounded-xl border border-red-500/50 bg-red-500/5">
                 <h4 className="font-medium text-red-500 mb-2">🚩 Flag Information</h4>
@@ -328,33 +325,33 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
                   <div><strong>Reason:</strong> {selectedFlag.reason}</div>
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Issue Title</label>
                 <p className="text-text-primary font-medium">{selectedFlag.issue.title}</p>
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Issue Description</label>
                 <p className="text-text-primary">{selectedFlag.issue.description}</p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-text-secondary text-sm">Status</label>
                   <p className="text-text-primary">{selectedFlag.issue.status?.name || 'Open'}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-text-secondary text-sm">Category</label>
                   <p className="text-text-primary">{selectedFlag.issue.category?.name || 'Unknown'}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-text-secondary text-sm">Reporter</label>
                   <p className="text-text-primary">{selectedFlag.issue.reporter?.user_name || 'Anonymous'}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-text-secondary text-sm">Created</label>
                   <p className="text-text-primary">
@@ -362,14 +359,14 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
                   </p>
                 </div>
               </div>
-              
+
               {selectedFlag.issue.address && (
                 <div>
                   <label className="text-text-secondary text-sm">Location</label>
                   <p className="text-text-primary">{selectedFlag.issue.address}</p>
                 </div>
               )}
-              
+
               {selectedFlag.issue.photos && selectedFlag.issue.photos.length > 0 && (
                 <div>
                   <label className="text-text-secondary text-sm">Photos ({selectedFlag.issue.photos.length})</label>
@@ -386,7 +383,7 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
                 </div>
               )}
             </div>
-            
+
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => {
@@ -397,17 +394,17 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
               >
                 Resolve Flag
               </button>
-              
+
               <button
                 onClick={() => {
                   handleHideIssue(selectedFlag.issue.id);
                   setSelectedFlag(null);
                 }}
-                className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
+                className="px-4 py-2 bg-red-500 text-black rounded-xl hover:bg-red-600 transition-colors"
               >
                 Hide Issue
               </button>
-              
+
               <button
                 onClick={() => setSelectedFlag(null)}
                 className="px-4 py-2 glass-surface border border-glass-border rounded-xl text-text-secondary hover:text-accent-primary transition-colors"

@@ -17,15 +17,34 @@ export const registerUser = async (req, res) => {
     const { user_name, email, password } = req.body;
 
     try {
-        // Check if user already exists
+        // Normalize email to lowercase for consistent storage
+        const normalizedEmail = email.toLowerCase().trim();
+
+        console.log('Registration attempt:', { user_name, email: normalizedEmail });
+
+        // Check if user already exists with normalized email
         const existingUser = await query(`
-            SELECT id FROM users WHERE email = $1
-        `, [email]);
+            SELECT id FROM users WHERE LOWER(email) = $1
+        `, [normalizedEmail]);
 
         if (existingUser.rowCount > 0) {
+            console.log('Registration failed - email already exists:', normalizedEmail);
             return res.status(400).json({
                 success: false,
                 error: 'Email already registered'
+            });
+        }
+
+        // Check if username already exists
+        const existingUsername = await query(`
+            SELECT id FROM users WHERE LOWER(user_name) = $1
+        `, [user_name.toLowerCase().trim()]);
+
+        if (existingUsername.rowCount > 0) {
+            console.log('Registration failed - username already exists:', user_name);
+            return res.status(400).json({
+                success: false,
+                error: 'Username already taken'
             });
         }
 
@@ -35,10 +54,12 @@ export const registerUser = async (req, res) => {
             INSERT INTO users (user_name, email, password_hash)
             VALUES ($1, $2, $3)
             RETURNING id, user_name, email, created_at
-        `, [user_name, email, hashedPassword]);
+        `, [user_name.trim(), normalizedEmail, hashedPassword]);
 
         const newUser = result.rows[0];
         const token = generateToken(newUser);
+
+        console.log('Registration successful:', { id: newUser.id, email: newUser.email });
 
         res.status(201).json({
             success: true,
@@ -65,13 +86,19 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
+        // Normalize email to lowercase for consistent lookup
+        const normalizedEmail = email.toLowerCase().trim();
+
+        console.log('Login attempt:', { email: normalizedEmail });
+
         const result = await query(`
-            SELECT id, user_name, email, password_hash, is_banned
+            SELECT id, user_name, email, password_hash, is_banned, is_verified
             FROM users 
-            WHERE email = $1
-        `, [email]);
+            WHERE LOWER(email) = $1
+        `, [normalizedEmail]);
 
         if (result.rowCount === 0) {
+            console.log('Login failed - user not found:', normalizedEmail);
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
@@ -79,8 +106,10 @@ export const loginUser = async (req, res) => {
         }
 
         const user = result.rows[0];
+        console.log('User found:', { id: user.id, email: user.email, is_banned: user.is_banned });
 
         if (user.is_banned) {
+            console.log('Login failed - user banned:', normalizedEmail);
             return res.status(403).json({
                 success: false,
                 error: 'Account has been banned'
@@ -89,6 +118,7 @@ export const loginUser = async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) {
+            console.log('Login failed - invalid password:', normalizedEmail);
             return res.status(401).json({
                 success: false,
                 error: 'Invalid password'
@@ -103,6 +133,8 @@ export const loginUser = async (req, res) => {
         `, [user.id]);
 
         const token = generateToken(user);
+        console.log('Login successful:', { id: user.id, email: user.email });
+
         res.json({
             success: true,
             data: {

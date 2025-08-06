@@ -125,7 +125,7 @@ export default function AdminDashboard({ analytics }: AdminDashboardProps) {
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center text-white text-xl`}>
+              <div className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center text-black text-xl`}>
                 {stat.icon}
               </div>
               <div className={`text-sm font-medium ${stat.changeType === 'positive' ? 'text-green-500' : 'text-red-500'
@@ -161,7 +161,7 @@ export default function AdminDashboard({ analytics }: AdminDashboardProps) {
                   : 'border-glass-border hover:shadow-lg'
                   }`}
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm ${activity.priority === 'high'
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-black text-sm ${activity.priority === 'high'
                   ? 'bg-gradient-to-r from-red-500 to-pink-500'
                   : 'bg-gradient-to-r from-accent-primary to-accent-secondary'
                   }`}>

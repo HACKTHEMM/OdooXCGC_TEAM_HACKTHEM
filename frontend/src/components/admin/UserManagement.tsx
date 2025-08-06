@@ -17,10 +17,10 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || 
-                         (filterStatus === 'active' && !user.is_banned) ||
-                         (filterStatus === 'banned' && user.is_banned);
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === 'all' ||
+      (filterStatus === 'active' && !user.is_banned) ||
+      (filterStatus === 'banned' && user.is_banned);
     return matchesSearch && matchesFilter;
   });
 
@@ -28,9 +28,9 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
     try {
       setLoading(true);
       const response = await apiClient.banUser(userId);
-      
+
       if (response.success) {
-        const updatedUsers = users.map(user => 
+        const updatedUsers = users.map(user =>
           user.id === userId ? { ...user, is_banned: ban } : user
         );
         onUsersUpdate(updatedUsers);
@@ -43,8 +43,8 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
   };
 
   const getStatusColor = (isBanned: boolean) => {
-    return isBanned 
-      ? 'bg-red-500/20 text-red-500 border-red-500/30' 
+    return isBanned
+      ? 'bg-red-500/20 text-red-500 border-red-500/30'
       : 'bg-green-500/20 text-green-500 border-green-500/30';
   };
 
@@ -64,7 +64,7 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-bright-blue to-vibrant-pink rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-bright-blue to-vibrant-pink rounded-xl flex items-center justify-center text-black text-xl">
               👥
             </div>
             <div>
@@ -75,10 +75,10 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
             </div>
           </div>
         </div>
-        
+
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-neon-green to-iridescent-purple rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-neon-green to-iridescent-purple rounded-xl flex items-center justify-center text-black text-xl">
               ✅
             </div>
             <div>
@@ -89,10 +89,10 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
             </div>
           </div>
         </div>
-        
+
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-vibrant-pink to-bright-blue rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-vibrant-pink to-bright-blue rounded-xl flex items-center justify-center text-black text-xl">
               🚫
             </div>
             <div>
@@ -120,31 +120,28 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
           <div className="flex gap-2">
             <button
               onClick={() => setFilterStatus('all')}
-              className={`px-4 py-2 rounded-xl transition-all duration-300 ${
-                filterStatus === 'all'
-                  ? 'bg-accent-primary text-white'
+              className={`px-4 py-2 rounded-xl transition-all duration-300 ${filterStatus === 'all'
+                  ? 'bg-accent-primary text-black'
                   : 'glass-surface border border-glass-border text-text-secondary hover:text-accent-primary'
-              }`}
+                }`}
             >
               All
             </button>
             <button
               onClick={() => setFilterStatus('active')}
-              className={`px-4 py-2 rounded-xl transition-all duration-300 ${
-                filterStatus === 'active'
-                  ? 'bg-accent-primary text-white'
+              className={`px-4 py-2 rounded-xl transition-all duration-300 ${filterStatus === 'active'
+                  ? 'bg-accent-primary text-black'
                   : 'glass-surface border border-glass-border text-text-secondary hover:text-accent-primary'
-              }`}
+                }`}
             >
               Active
             </button>
             <button
               onClick={() => setFilterStatus('banned')}
-              className={`px-4 py-2 rounded-xl transition-all duration-300 ${
-                filterStatus === 'banned'
-                  ? 'bg-accent-primary text-white'
+              className={`px-4 py-2 rounded-xl transition-all duration-300 ${filterStatus === 'banned'
+                  ? 'bg-accent-primary text-black'
                   : 'glass-surface border border-glass-border text-text-secondary hover:text-accent-primary'
-              }`}
+                }`}
             >
               Banned
             </button>
@@ -157,7 +154,7 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
         <h3 className="text-xl font-bold gradient-text-charcoal mb-6">
           Users ({filteredUsers.length})
         </h3>
-        
+
         <div className="space-y-4">
           {filteredUsers.map((user) => (
             <div
@@ -166,7 +163,7 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full flex items-center justify-center text-black font-bold">
                     {user.user_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -186,13 +183,13 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   {user.is_banned ? (
                     <button
                       onClick={() => handleBanUser(user.id, false)}
                       disabled={loading}
-                      className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors disabled:opacity-50"
+                      className="px-4 py-2 bg-green-500 text-black rounded-xl hover:bg-green-600 transition-colors disabled:opacity-50"
                     >
                       Unban
                     </button>
@@ -200,12 +197,12 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
                     <button
                       onClick={() => handleBanUser(user.id, true)}
                       disabled={loading}
-                      className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
+                      className="px-4 py-2 bg-red-500 text-black rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
                     >
                       Ban
                     </button>
                   )}
-                  
+
                   <button
                     onClick={() => setSelectedUser(user)}
                     className="px-4 py-2 glass-surface border border-glass-border rounded-xl text-text-secondary hover:text-accent-primary transition-colors"
@@ -216,7 +213,7 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
               </div>
             </div>
           ))}
-          
+
           {filteredUsers.length === 0 && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">👥</div>
@@ -243,32 +240,32 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
                 ✕
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="text-text-secondary text-sm">Name</label>
                 <p className="text-text-primary font-medium">{selectedUser.user_name}</p>
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Email</label>
                 <p className="text-text-primary font-medium">{selectedUser.email}</p>
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Status</label>
                 <p className={`font-medium ${selectedUser.is_banned ? 'text-red-500' : 'text-green-500'}`}>
                   {selectedUser.is_banned ? 'Banned' : 'Active'}
                 </p>
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Joined</label>
                 <p className="text-text-primary">
                   {new Date(selectedUser.created_at).toLocaleDateString()}
                 </p>
               </div>
-              
+
               <div>
                 <label className="text-text-secondary text-sm">Last Updated</label>
                 <p className="text-text-primary">
@@ -276,7 +273,7 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
                 </p>
               </div>
             </div>
-            
+
             <div className="flex gap-3 mt-6">
               {selectedUser.is_banned ? (
                 <button
@@ -294,12 +291,12 @@ export default function UserManagement({ users, onUsersUpdate }: UserManagementP
                     handleBanUser(selectedUser.id, true);
                     setSelectedUser(null);
                   }}
-                  className="flex-1 bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 transition-colors"
+                  className="flex-1 bg-red-500 text-black px-4 py-2 rounded-xl hover:bg-red-600 transition-colors"
                 >
                   Ban User
                 </button>
               )}
-              
+
               <button
                 onClick={() => setSelectedUser(null)}
                 className="flex-1 glass-surface border border-glass-border px-4 py-2 rounded-xl text-text-secondary hover:text-accent-primary transition-colors"

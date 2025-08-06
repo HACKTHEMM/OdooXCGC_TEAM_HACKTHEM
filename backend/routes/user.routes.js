@@ -10,12 +10,13 @@ import {
 } from '../controllers/user.controller.js';
 import { verifyAuth } from '../middlewares/auth.js';
 import { requireAdmin, requireSuperAdmin } from '../middlewares/authorization.js';
+import { validateSignup, validateLogin } from '../middlewares/validateUserInput.js';
 
 const router = express.Router();
 
 // Public routes
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+router.post('/register', validateSignup, registerUser);
+router.post('/login', validateLogin, loginUser);
 
 // Protected user routes
 router.get('/me', verifyAuth, getMyProfile);

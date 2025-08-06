@@ -4,11 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/header';
 import { apiClient, isApiSuccess } from '@/lib/api-client';
-import { Issue, IssueFilters, PaginatedResponse } from '@/types/database';
+import { Issue, IssueFilters } from '@/types/database';
 
 export default function IssuesPage() {
     const [issues, setIssues] = useState<Issue[]>([]);
-    const [filteredIssues, setFilteredIssues] = useState<Issue[]>([]);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
@@ -56,7 +55,6 @@ export default function IssuesPage() {
 
                 if (isApiSuccess(response)) {
                     setIssues(response.data.data);
-                    setFilteredIssues(response.data.data);
                     setTotalPages(response.data.totalPages);
                 } else {
                     setError(response.error || 'Failed to load issues');
@@ -81,39 +79,48 @@ export default function IssuesPage() {
             case 'resolved':
                 return 'bg-green-500/10 text-green-600 border-green-500/20';
             case 'closed':
-                return 'bg-muted-gray/10 text-muted-gray border-muted-gray/20';
+                return 'bg-gray-100/50 text-black border-gray-300/20';
             default:
-                return 'bg-muted-gray/10 text-muted-gray border-muted-gray/20';
+                return 'bg-gray-100/50 text-black border-gray-300/20';
         }
     };
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
             case 'urgent':
-                return 'bg-electric-coral text-white';
+                return 'bg-electric-coral text-black';
             case 'high':
-                return 'bg-orange-500 text-white';
+                return 'bg-orange-500 text-black';
             case 'medium':
-                return 'bg-sky-blue text-white';
+                return 'bg-sky-blue text-black';
             case 'low':
-                return 'bg-green-500 text-white';
+                return 'bg-green-500 text-black';
             default:
-                return 'bg-muted-gray text-white';
+                return 'bg-muted-gray text-black';
         }
     };
 
     const handleUpvote = async (issueId: number) => {
         try {
             await apiClient.upvoteIssue(issueId);
-            // Refresh the issues list
-            window.location.reload();
+            // Refresh the current page data instead of full reload
+            const filters: IssueFilters = {};
+            if (selectedCategory !== 'all') {
+                filters.category_id = parseInt(selectedCategory);
+            }
+            if (selectedStatus !== 'all') {
+                filters.status_id = parseInt(selectedStatus);
+            }
+            if (searchQuery.trim()) {
+                filters.search_term = searchQuery.trim();
+            }
+            const response = await apiClient.getIssues(filters, currentPage, 10);
+            if (isApiSuccess(response)) {
+                setIssues(response.data.data);
+            }
         } catch (err) {
             console.error('Failed to upvote issue:', err);
         }
-    };
-
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
     };
 
     return (
@@ -203,7 +210,7 @@ export default function IssuesPage() {
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        {filteredIssues.map((issue) => (
+                        {issues.map((issue: Issue) => (
                             <div key={issue.id} className="card-modern p-6 hover:border-accent-primary transition-all duration-300">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex-1">
@@ -211,12 +218,14 @@ export default function IssuesPage() {
                                             <h3 className="text-xl font-bold text-text-primary">
                                                 {issue.title}
                                             </h3>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor((issue as any).status_name || 'open')}`}>
-                                                {(issue as any).status_name || 'Open'}
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor((issue as Issue & { status_name?: string }).status_name || 'open')}`}>
+                                                {(issue as Issue & { status_name?: string }).status_name || 'Open'}
                                             </span>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor('medium')}`}>
-                                                Medium
-                                            </span>
+                                            {(issue as Issue & { priority?: string }).priority && (
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor((issue as Issue & { priority?: string }).priority!)}`}>
+                                                    {(issue as Issue & { priority?: string }).priority}
+                                                </span>
+                                            )}
                                         </div>
                                         <p className="text-text-secondary mb-3">
                                             {issue.description}
@@ -224,7 +233,7 @@ export default function IssuesPage() {
                                         <div className="flex items-center gap-4 text-sm text-text-secondary">
                                             <span>📍 {issue.address || 'Location not specified'}</span>
                                             <span>📅 {new Date(issue.created_at).toLocaleDateString()}</span>
-                                            <span>👤 {(issue as any).reporter_name || 'Anonymous'}</span>
+                                            <span>👤 {(issue as Issue & { reporter_name?: string }).reporter_name || 'Anonymous'}</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-center gap-2">
@@ -242,7 +251,7 @@ export default function IssuesPage() {
 
                                 {issue.photos && issue.photos.length > 0 && (
                                     <div className="flex gap-2 mb-4">
-                                        {issue.photos.slice(0, 3).map((photo, index) => (
+                                        {issue.photos.slice(0, 3).map((photo: { photo_url: string }, index: number) => (
                                             <div key={index} className="w-20 h-20 rounded-lg overflow-hidden">
                                                 <img
                                                     src={photo.photo_url}
@@ -257,7 +266,7 @@ export default function IssuesPage() {
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-4">
                                         <span className="text-sm text-text-secondary">
-                                            Category: {(issue as any).category_name || 'Unknown'}
+                                            Category: {(issue as Issue & { category_name?: string }).category_name || 'Unknown'}
                                         </span>
                                         {issue.resolved_at && (
                                             <span className="text-sm text-green-600 dark:text-green-400">
@@ -284,9 +293,9 @@ export default function IssuesPage() {
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                 <button
                                     key={page}
-                                    onClick={() => handlePageChange(page)}
+                                    onClick={() => setCurrentPage(page)}
                                     className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${currentPage === page
-                                        ? 'bg-accent-primary text-white'
+                                        ? 'bg-accent-primary text-black'
                                         : 'glass-surface border border-glass-border text-text-primary hover:border-accent-primary'
                                         }`}
                                 >
@@ -298,10 +307,10 @@ export default function IssuesPage() {
                 )}
 
                 {/* Empty State */}
-                {!loading && !error && filteredIssues.length === 0 && (
+                {!loading && !error && issues.length === 0 && (
                     <div className="text-center py-12">
-                        <div className="w-24 h-24 bg-gradient-to-r from-bright-blue to-vibrant-pink dark:from-neon-green dark:to-iridescent-purple rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-24 h-24 bg-gradient-to-r from-electric-coral to-sky-blue rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-12 h-12 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>

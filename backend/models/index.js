@@ -6,22 +6,23 @@ export const User = {
   // Create a new user
   async create(userData) {
     const { userName, email, phone, passwordHash, isVerified = false, isAnonymous = false } = userData;
-    
+
     const result = await query(`
       INSERT INTO users (user_name, email, phone, password_hash, is_verified, is_anonymous)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING id, user_name, email, phone, is_verified, is_anonymous, created_at
     `, [userName, email, phone, passwordHash, isVerified, isAnonymous]);
-    
+
     return result.rows[0];
   },
 
   // Find user by email
   async findByEmail(email) {
+    const normalizedEmail = email.toLowerCase().trim();
     const result = await query(`
-      SELECT * FROM users WHERE email = $1 AND is_banned = false
-    `, [email]);
-    
+      SELECT * FROM users WHERE LOWER(email) = $1 AND is_banned = false
+    `, [normalizedEmail]);
+
     return result.rows[0];
   },
 
@@ -31,7 +32,7 @@ export const User = {
       SELECT id, user_name, email, phone, is_verified, is_anonymous, is_banned, created_at, updated_at, last_login
       FROM users WHERE id = $1
     `, [id]);
-    
+
     return result.rows[0];
   },
 
@@ -91,7 +92,7 @@ export const Category = {
     const result = await query(`
       SELECT * FROM categories WHERE is_active = true ORDER BY name
     `);
-    
+
     return result.rows;
   },
 
@@ -100,20 +101,20 @@ export const Category = {
     const result = await query(`
       SELECT * FROM categories WHERE id = $1 AND is_active = true
     `, [id]);
-    
+
     return result.rows[0];
   },
 
   // Create new category
   async create(categoryData) {
     const { name, description, iconUrl, colorCode } = categoryData;
-    
+
     const result = await query(`
       INSERT INTO categories (name, description, icon_url, color_code)
       VALUES ($1, $2, $3, $4)
       RETURNING *
     `, [name, description, iconUrl, colorCode]);
-    
+
     return result.rows[0];
   }
 };
@@ -125,7 +126,7 @@ export const IssueStatus = {
     const result = await query(`
       SELECT * FROM issue_status WHERE is_active = true ORDER BY sort_order
     `);
-    
+
     return result.rows;
   },
 
@@ -134,7 +135,7 @@ export const IssueStatus = {
     const result = await query(`
       SELECT * FROM issue_status WHERE id = $1
     `, [id]);
-    
+
     return result.rows[0];
   },
 
@@ -143,7 +144,7 @@ export const IssueStatus = {
     const result = await query(`
       SELECT * FROM issue_status WHERE name = 'Reported'
     `);
-    
+
     return result.rows[0];
   }
 };
@@ -192,7 +193,7 @@ export const Issue = {
   // Get nearby issues
   async findNearby(lat, lng, radiusKm = 5, options = {}) {
     const { categoryId, statusId, limit = 50 } = options;
-    
+
     let whereClause = `
       ST_DWithin(
         ST_GeogFromText('POINT(' || $2 || ' ' || $1 || ')'),
@@ -201,22 +202,22 @@ export const Issue = {
       )
       AND i.is_hidden = false
     `;
-    
+
     const params = [lat, lng, radiusKm];
     let paramCount = 4;
-    
+
     if (categoryId) {
       whereClause += ` AND i.category_id = $${paramCount}`;
       params.push(categoryId);
       paramCount++;
     }
-    
+
     if (statusId) {
       whereClause += ` AND i.status_id = $${paramCount}`;
       params.push(statusId);
       paramCount++;
     }
-    
+
     params.push(limit);
 
     const result = await query(`
@@ -291,11 +292,11 @@ export const Issue = {
 
   // Get issues with pagination
   async findAll(options = {}) {
-    const { 
-      page = 1, 
-      limit = 20, 
-      categoryId, 
-      statusId, 
+    const {
+      page = 1,
+      limit = 20,
+      categoryId,
+      statusId,
       search,
       sortBy = 'created_at',
       sortOrder = 'DESC'
@@ -348,9 +349,9 @@ export const Issue = {
       SELECT COUNT(*) as total
       FROM issues i
       ${whereClause.replace(/\$\d+/g, (match, offset) => {
-        const index = parseInt(match.slice(1)) - 1;
-        return index < params.length - 2 ? match : '';
-      }).replace('LIMIT.*', '')}
+      const index = parseInt(match.slice(1)) - 1;
+      return index < params.length - 2 ? match : '';
+    }).replace('LIMIT.*', '')}
     `, params.slice(0, -2));
 
     return {
@@ -367,13 +368,13 @@ export const IssuePhoto = {
   // Add photo to issue
   async create(photoData) {
     const { issueId, photoUrl, photoOrder, fileSize, mimeType } = photoData;
-    
+
     const result = await query(`
       INSERT INTO issue_photos (issue_id, photo_url, photo_order, file_size, mime_type)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `, [issueId, photoUrl, photoOrder, fileSize, mimeType]);
-    
+
     return result.rows[0];
   },
 
@@ -384,7 +385,7 @@ export const IssuePhoto = {
       WHERE issue_id = $1 
       ORDER BY photo_order
     `, [issueId]);
-    
+
     return result.rows;
   }
 };
@@ -395,23 +396,23 @@ export const Notification = {
   async findByUserId(userId, options = {}) {
     const { page = 1, limit = 20, unreadOnly = false } = options;
     const offset = (page - 1) * limit;
-    
+
     let whereClause = 'WHERE user_id = $1';
     const params = [userId];
-    
+
     if (unreadOnly) {
       whereClause += ' AND is_read = false';
     }
-    
+
     params.push(limit, offset);
-    
+
     const result = await query(`
       SELECT * FROM notifications
       ${whereClause}
       ORDER BY created_at DESC
       LIMIT $2 OFFSET $3
     `, params);
-    
+
     return result.rows;
   },
 
@@ -423,7 +424,7 @@ export const Notification = {
       WHERE id = $1 AND user_id = $2
       RETURNING *
     `, [id, userId]);
-    
+
     return result.rows[0];
   }
 };

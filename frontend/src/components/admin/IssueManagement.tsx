@@ -153,7 +153,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-bright-blue to-vibrant-pink rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-bright-blue to-vibrant-pink rounded-xl flex items-center justify-center text-black text-xl">
               🚨
             </div>
             <div>
@@ -167,7 +167,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
 
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center text-black text-xl">
               ⏳
             </div>
             <div>
@@ -181,7 +181,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
 
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-black text-xl">
               🔄
             </div>
             <div>
@@ -195,7 +195,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
 
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-neon-green to-iridescent-purple rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-neon-green to-iridescent-purple rounded-xl flex items-center justify-center text-black text-xl">
               ✅
             </div>
             <div>
@@ -209,7 +209,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
 
         <div className="card-modern p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-xl">
+            <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center text-black text-xl">
               🚩
             </div>
             <div>
@@ -356,7 +356,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                       setSelectedIssue(issue);
                       setShowFlagModal(true);
                     }}
-                    className="px-3 py-1 text-xs bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                    className="px-3 py-1 text-xs bg-orange-500 text-black rounded-lg hover:bg-orange-600 transition-colors"
                   >
                     Flag
                   </button>
@@ -364,7 +364,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                   <button
                     onClick={() => handleHideIssue(issue.id)}
                     disabled={loading}
-                    className="px-3 py-1 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                    className="px-3 py-1 text-xs bg-red-500 text-black rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
                   >
                     Hide
                   </button>
@@ -522,7 +522,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                 onClick={() => {
                   setShowFlagModal(true);
                 }}
-                className="px-4 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors"
+                className="px-4 py-2 bg-orange-500 text-black rounded-xl hover:bg-orange-600 transition-colors"
               >
                 Flag Issue
               </button>
@@ -532,7 +532,7 @@ export default function IssueManagement({ issues, onIssuesUpdate }: IssueManagem
                   handleHideIssue(selectedIssue.id);
                   setSelectedIssue(null);
                 }}
-                className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
+                className="px-4 py-2 bg-red-500 text-black rounded-xl hover:bg-red-600 transition-colors"
               >
                 Hide Issue
               </button>
