@@ -7,10 +7,10 @@ const { Pool } = pkg;
 // Create PostgreSQL connection pool
 const pool = new Pool({
   connectionString: DATABASE_URL,
-  // Uncomment for production with SSL
-  // ssl: {
-  //   rejectUnauthorized: false,
-  // },
+  // SSL configuration for Render.com and other cloud providers
+  ssl: {
+    rejectUnauthorized: false,
+  },
   
   // Connection pool settings
   max: 20, // Maximum number of clients in the pool
