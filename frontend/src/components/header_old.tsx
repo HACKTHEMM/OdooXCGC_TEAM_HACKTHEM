@@ -7,8 +7,8 @@ import { clearAuthData, getAuthData } from '../lib/auth-utils';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{ user_name?: string; email?: string } | null>(null);
+  const [_isAuthenticated, setIsAuthenticated] = useState(false);
+  const [_user, setUser] = useState<{ user_name?: string; email?: string } | null>(null);
 
   useEffect(() => {
     // Check authentication status
@@ -39,7 +39,7 @@ export default function Header() {
     };
   }, []);
 
-  const handleLogout = () => {
+  const _handleLogout = () => {
     if (typeof window !== 'undefined') {
       clearAuthData();
       setIsAuthenticated(false);

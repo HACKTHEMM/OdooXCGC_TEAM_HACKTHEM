@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Header from '../../components/header';
-import MapWrapper from '../../components/map-wrapper';
 import { Issue } from '../../types/database';
 import { apiClient, isApiSuccess } from '../../lib/api-client';
 

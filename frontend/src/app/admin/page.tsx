@@ -42,7 +42,7 @@ export default function AdminPage() {
       }
 
       if (usersRes.success && usersRes.data) {
-        setUsers(Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data as any).data || []);
+        setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
       }
 
       if (issuesRes.success && issuesRes.data) {

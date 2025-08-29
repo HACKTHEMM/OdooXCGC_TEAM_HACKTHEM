@@ -6,14 +6,12 @@ import {
   IssueStatus,
   User,
   CreateIssueForm,
-  UpdateIssueForm,
   CreateUserForm,
   LoginForm,
   IssueFilters,
   ApiResponse,
   PaginatedResponse,
   IssuePhoto,
-  IssueStatusLog,
   Notification,
   AnalyticsSummary
 } from '../types/database';
@@ -52,7 +50,7 @@ class ApiClient {
           if (errorData.error) {
             errorMessage = errorData.error;
           }
-        } catch (e) {
+        } catch (_e) {
           // If we can't parse the error response, use the default message
         }
 
@@ -115,7 +113,7 @@ class ApiClient {
     });
 
     if (issueData.photos) {
-      issueData.photos.forEach((photo, index) => {
+      issueData.photos.forEach((photo, _index) => {
         formData.append(`images`, photo);
       });
     }

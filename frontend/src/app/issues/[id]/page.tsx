@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/header';
-import { Issue, IssueStatusLog } from '../../../types/database';
-import { apiClient, isApiSuccess, formatApiError } from '../../../lib/api-client';
+import { Issue } from '../../../types/database';
+import { apiClient, isApiSuccess } from '../../../lib/api-client';
 
 interface Comment {
     id: number;
@@ -17,7 +17,7 @@ interface Comment {
 export default function IssueDetailPage() {
     const params = useParams();
     const [issue, setIssue] = useState<Issue | null>(null);
-    const [comments, setComments] = useState<Comment[]>([]);
+    const [comments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [hasUpvoted, setHasUpvoted] = useState(false);
     const [loading, setLoading] = useState(true);

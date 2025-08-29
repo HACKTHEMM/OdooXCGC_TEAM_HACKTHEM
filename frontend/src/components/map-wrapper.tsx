@@ -32,7 +32,7 @@ interface MapWrapperProps {
 export default function MapWrapper({ csvUrl }: MapWrapperProps) {
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [filteredLocations, setFilteredLocations] = useState<LocationData[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+  const [_selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [isFiltered, setIsFiltered] = useState(false);
 
   const handleLocationsLoaded = (loadedLocations: LocationData[]) => {
@@ -42,18 +42,18 @@ export default function MapWrapper({ csvUrl }: MapWrapperProps) {
     }
   };
 
-  const handleSelectLocation = (location: LocationData) => {
+  const _handleSelectLocation = (location: LocationData) => {
     setSelectedLocation(location);
     // Add logic to center map on selected location if needed
   };
 
-  const handleFilterMap = (location: LocationData) => {
+  const _handleFilterMap = (location: LocationData) => {
     setFilteredLocations([location]);
     setSelectedLocation(location);
     setIsFiltered(true);
   };
 
-  const handleResetFilter = () => {
+  const _handleResetFilter = () => {
     setFilteredLocations(locations);
     setIsFiltered(false);
   };

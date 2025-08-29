@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Camera, MapPin, X, Send } from 'lucide-react';
 import Image from 'next/image';
 import { CreateIssueForm, Category } from '../types/database';
-import { apiClient, isApiSuccess, formatApiError } from '../lib/api-client';
+import { apiClient, isApiSuccess } from '../lib/api-client';
 
 interface ReportIssueFormProps {
   onSubmit: (issue: CreateIssueForm) => void;

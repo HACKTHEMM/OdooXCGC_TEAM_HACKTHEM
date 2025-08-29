@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/header';
 import { apiClient, isApiSuccess } from '@/lib/api-client';
-import { Issue, IssueFilters, PaginatedResponse } from '@/types/database';
+import { Issue, IssueFilters } from '@/types/database';
 
 export default function IssuesPage() {
-    const [issues, setIssues] = useState<Issue[]>([]);
     const [filteredIssues, setFilteredIssues] = useState<Issue[]>([]);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedStatus, setSelectedStatus] = useState('all');
@@ -55,7 +54,6 @@ export default function IssuesPage() {
                 const response = await apiClient.getIssues(filters, currentPage, 10);
 
                 if (isApiSuccess(response)) {
-                    setIssues(response.data.data);
                     setFilteredIssues(response.data.data);
                     setTotalPages(response.data.totalPages);
                 } else {
@@ -211,8 +209,8 @@ export default function IssuesPage() {
                                             <h3 className="text-xl font-bold text-text-primary">
                                                 {issue.title}
                                             </h3>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor((issue as any).status_name || 'open')}`}>
-                                                {(issue as any).status_name || 'Open'}
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(issue.status?.name || 'open')}`}>
+                                                {issue.status?.name || 'Open'}
                                             </span>
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor('medium')}`}>
                                                 Medium
@@ -224,7 +222,7 @@ export default function IssuesPage() {
                                         <div className="flex items-center gap-4 text-sm text-text-secondary">
                                             <span>📍 {issue.address || 'Location not specified'}</span>
                                             <span>📅 {new Date(issue.created_at).toLocaleDateString()}</span>
-                                            <span>👤 {(issue as any).reporter_name || 'Anonymous'}</span>
+                                            <span>👤 {issue.reporter?.user_name || 'Anonymous'}</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-center gap-2">
@@ -257,7 +255,7 @@ export default function IssuesPage() {
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-4">
                                         <span className="text-sm text-text-secondary">
-                                            Category: {(issue as any).category_name || 'Unknown'}
+                                            Category: {issue.category?.name || 'Unknown'}
                                         </span>
                                         {issue.resolved_at && (
                                             <span className="text-sm text-green-600 dark:text-green-400">

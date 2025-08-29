@@ -98,7 +98,7 @@ export default function FlagMonitoring({ onIssueUpdate }: FlagMonitoringProps) {
     }
   };
 
-  const filteredFlags = flagDetails.filter(flag => {
+  const filteredFlags = flagDetails.filter(_flag => {
     if (filterStatus === 'pending') return true; // All flags are pending in this mock
     if (filterStatus === 'resolved') return false; // No resolved flags in this mock
     return true;

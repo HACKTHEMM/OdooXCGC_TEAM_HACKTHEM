@@ -1,5 +1,7 @@
+import { User } from '../types/database';
+
 // Utility functions for managing authentication state
-export const setAuthData = (token: string, user: any) => {
+export const setAuthData = (token: string, user: User) => {
     if (typeof window !== 'undefined') {
         localStorage.setItem('auth_token', token);
         localStorage.setItem('user', JSON.stringify(user));
